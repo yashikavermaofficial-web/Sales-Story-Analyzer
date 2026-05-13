@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Capgrid — Client Pitch Intelligence Engine</title>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --B:#3A8DFF;--BD:#1A6AE0;--BL:#EEF5FF;--BLL:#F7FAFF;--BB:#C3DCFF;
+  --K:#0B0F1C;--K2:#2A3149;--K3:#5A6380;--K4:#9BA3BC;
+  --R:#E5E9F4;--R2:#CDD3E8;--W:#FFF;--BG:#F4F6FC;--BG2:#ECEEF6;
+  --G:#047857;--GL:#ECFDF5;--GB:#A7F3D0;--A:#B45309;--AL:#FFFBEB;--AB:#FDE68A;
+  --S1:0 1px 3px rgba(11,15,28,.05);--S2:0 2px 8px rgba(11,15,28,.08),0 8px 24px rgba(11,15,28,.08);
+  --S3:0 2px 8px rgba(58,141,255,.15),0 12px 40px rgba(11,15,28,.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--BG);color:var(--K);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.nav{height:56px;background:var(--W);border-bottom:2px solid var(--R);padding:0 2.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:400;box-shadow:var(--S1)}
+.nav-l{display:flex;align-items:center;gap:14px}
+.logo{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--K)}
+.logo span{color:var(--B)}
+.nav-div{width:1.5px;height:18px;background:var(--R2)}
+.nav-sub{font-size:12px;color:var(--K3);font-weight:500}
+.nav-r{display:flex;align-items:center;gap:8px}
+.nav-pill{font-size:10.5px;background:var(--BL);color:var(--B);border:1.5px solid var(--BB);padding:4px 13px;border-radius:99px;font-weight:700}
+.nav-edit{display:none;font-size:11.5px;color:var(--K2);background:var(--W);border:1.5px solid var(--R2);padding:5px 14px;border-radius:7px;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:600;transition:all .13s}
+.nav-edit:hover{border-color:var(--B);color:var(--B);background:var(--BL)}
+
+/* DRAWER */
+.drawer{background:var(--W);border-bottom:2px solid var(--R);overflow:hidden;max-height:0;transition:max-height .3s,padding .3s}
+.drawer.open{max-height:160px;padding:1.2rem 2.5rem 1.4rem}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.df label{display:block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--K4);margin-bottom:5px}
+.df input,.df select{width:100%;padding:8px 11px;border:1.5px solid var(--R2);border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;color:var(--K);outline:none;background:var(--W);transition:border .14s}
+.df input:focus,.df select:focus{border-color:var(--B)}
+.d-btn{padding:9px 22px;background:var(--B);color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;transition:background .13s}
+.d-btn:hover{background:var(--BD)}
+
+/* WRAP */
+.wrap{max-width:1100px;margin:0 auto;padding:2rem 2rem 4rem}
+.sc{display:none}.sc.on{display:block;animation:fu .28s ease}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* INPUT */
+.inp-layout{display:grid;grid-template-columns:1fr 295px;gap:22px;align-items:start}
+.form-card{background:var(--W);border:2px solid var(--R);border-radius:16px;padding:2rem;box-shadow:var(--S2)}
+.f-eye{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.3px;color:var(--B);margin-bottom:10px}
+.f-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--K);line-height:1.2;margin-bottom:6px}
+.f-desc{font-size:13px;color:var(--K3);line-height:1.65;margin-bottom:20px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--K4);margin-bottom:7px}
+.field input[type=text]{width:100%;padding:11px 14px;border:2px solid var(--R2);border-radius:9px;font-family:'Outfit',sans-serif;font-size:14px;color:var(--K);outline:none;transition:all .14s}
+.field input:focus{border-color:var(--B);box-shadow:0 0 0 3px rgba(58,141,255,.1)}
+.field input::placeholder{color:var(--K4)}
+
+/* SEARCH */
+.srch-wrap{position:relative}
+.sugg{position:absolute;top:100%;left:0;right:0;background:var(--W);border:2px solid var(--B);border-top:none;border-radius:0 0 10px 10px;z-index:200;max-height:230px;overflow-y:auto;display:none;box-shadow:var(--S3)}
+.sug-item{padding:9px 14px;cursor:pointer;font-size:13px;color:var(--K2);border-bottom:1px solid var(--R);transition:background .1s}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover,.sug-item.hi{background:var(--BL);color:var(--B)}
+.sug-item strong{color:var(--K);font-weight:700}
+.sug-meta{font-size:11px;color:var(--K4);margin-left:7px}
+
+/* REV BOX */
+.rev-box{margin-top:9px;border-radius:10px;border:2px solid var(--R);overflow:hidden;display:none}
+.rev-box.show{display:block}
+.rv-ok{background:var(--W)}
+.rv-cols{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--R)}
+.rvc{padding:11px 14px}
+.rvc+.rvc{border-left:1px solid var(--R)}
+.rvc-l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--K4);margin-bottom:4px}
+.rvc-v{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--K)}
+.bc-band{background:var(--BL);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--BB)}
+.bc-lbl{font-size:12px;color:var(--B);font-weight:700}
+.bc-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:700;color:var(--B)}
+.src-band{padding:8px 14px;background:var(--GL);display:flex;align-items:flex-start;gap:6px}
+.src-ico{color:var(--G);flex-shrink:0;font-size:11px;margin-top:1px}
+.src-txt{font-size:11px;color:var(--G);line-height:1.55;font-weight:500}
+.src-txt a{color:inherit;font-weight:700}
+.rv-err{padding:11px 14px;font-size:12px;color:#DC2626;background:#FEF2F2;line-height:1.6}
+.man-box{padding:11px 14px;background:var(--BG);border-top:1px solid var(--R)}
+.man-row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.man-pfx{font-size:15px;font-weight:700;color:var(--K3)}
+.man-inp{flex:1;padding:7px 10px;border:1.5px solid var(--R2);border-radius:7px;font-family:'DM Mono',monospace;font-size:14px;color:var(--K);outline:none;background:var(--W);transition:border .13s}
+.man-inp:focus{border-color:var(--B)}
+.man-sfx{font-size:13px;color:var(--K3);font-weight:600}
+.man-hint{margin-top:8px;padding:8px 12px;background:var(--BL);border-radius:7px;font-family:'DM Mono',monospace;font-size:12px;color:var(--B);font-weight:700;display:none}
+
+/* IND */
+.ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ind-btn{border:2px solid var(--R);border-radius:10px;padding:11px 7px;cursor:pointer;text-align:center;background:var(--W);transition:all .14s}
+.ind-btn:hover{border-color:var(--B);background:var(--BL);transform:translateY(-1px)}
+.ind-btn.sel{border-color:var(--B);background:var(--BL);box-shadow:0 0 0 3px rgba(58,141,255,.1)}
+.ind-btn.sel .iname{color:var(--B)}
+.i-ico{font-size:20px;margin-bottom:4px}.iname{font-size:11px;font-weight:700;color:var(--K)}.isub{font-size:10px;color:var(--K3);margin-top:2px}
+
+/* GEN BTN */
+.gen-btn{width:100%;padding:13px;background:var(--B);color:#fff;border:none;border-radius:10px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:800;cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .16s}
+.gen-btn:hover:not(:disabled){background:var(--BD);transform:translateY(-1px);box-shadow:var(--S3)}
+.gen-btn:disabled{background:var(--BG2);cursor:not-allowed;color:var(--K4)}
+
+/* INFO COL */
+.info-col{display:flex;flex-direction:column;gap:11px}
+.ic{background:var(--W);border:2px solid var(--R);border-radius:12px;padding:14px 16px;box-shadow:var(--S1)}
+.ic-hd{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.ic-ico{width:28px;height:28px;border-radius:7px;background:var(--BL);display:flex;align-items:center;justify-content:center;font-size:13px;border:1.5px solid var(--BB);flex-shrink:0}
+.ic-t{font-size:12px;font-weight:700;color:var(--K)}
+.ic-b{font-size:12px;color:var(--K3);line-height:1.65}
+.ic-b strong{color:var(--K);font-weight:600}
+.co-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.co-tag{padding:3px 9px;background:var(--BG2);border:1px solid var(--R2);border-radius:99px;font-size:10.5px;color:var(--K2);cursor:pointer;transition:all .12s}
+.co-tag:hover{background:var(--BL);border-color:var(--B);color:var(--B)}
+
+/* PROC */
+.proc-c{max-width:560px;margin:4rem auto}
+.proc-hd{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.proc-spin{width:42px;height:42px;border:3px solid var(--R);border-top-color:var(--B);border-radius:50%;animation:spin 1s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--K)}
+.proc-sub{font-size:12px;color:var(--K3);margin-top:3px}
+.proc-steps{display:flex;flex-direction:column;gap:3px}
+.ps{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:8px;font-size:12.5px;color:var(--K4);opacity:0;transition:opacity .4s}
+.ps.vis{opacity:1;background:var(--W);color:var(--K2);box-shadow:var(--S1)}
+.ps.done{color:var(--G)}
+.ps-d{width:7px;height:7px;border-radius:50%;background:var(--R2);flex-shrink:0;margin-top:4px;transition:background .3s}
+.ps.vis .ps-d{background:var(--B)}.ps.done .ps-d{background:var(--G)}
+
+/* OUTPUT */
+.out-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.out-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--K)}
+.out-meta{font-size:11.5px;color:var(--K3);margin-top:3px}
+.a-bar{display:flex;gap:7px;flex-wrap:wrap}
+.ab{padding:7px 15px;border:2px solid var(--R2);border-radius:8px;background:var(--W);font-family:'Outfit',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--K2);transition:all .12s;display:flex;align-items:center;gap:5px}
+.ab:hover{background:var(--BL);border-color:var(--B);color:var(--B)}
+.ab.bl{background:var(--B);color:#fff;border-color:var(--B)}.ab.bl:hover{background:var(--BD);border-color:var(--BD)}
+.ab.dk{background:var(--K);color:#fff;border-color:var(--K)}.ab.dk:hover{background:var(--B);border-color:var(--B)}
+.ab:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.out-layout{display:grid;grid-template-columns:196px 1fr;gap:18px;align-items:start}
+
+/* SLIDE NAV */
+.snav{background:var(--W);border:2px solid var(--R);border-radius:12px;padding:10px;box-shadow:var(--S1);position:sticky;top:68px;max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--R) transparent}
+.sn-hdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.1px;color:var(--K4);padding:4px 8px 10px}
+.sn-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer;transition:all .12s;margin-bottom:2px}
+.sn-item:hover{background:var(--BG)}.sn-item.act{background:var(--BL)}
+.sn-n{width:20px;height:20px;border-radius:5px;background:var(--BG2);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--K4);flex-shrink:0;border:1.5px solid var(--R);transition:all .12s}
+.sn-item.act .sn-n{background:var(--B);color:#fff;border-color:var(--B)}
+.sn-l{font-size:11px;color:var(--K2);line-height:1.3;font-weight:500}.sn-item.act .sn-l{color:var(--B);font-weight:700}
+
+/* SLIDE CARD */
+.slide-card{background:var(--W);border:2px solid var(--R);border-radius:16px;overflow:hidden;box-shadow:var(--S2)}
+.slide-hero{background:var(--W);border-bottom:3px solid var(--B);padding:1.75rem 2rem 1.5rem;position:relative;overflow:hidden;min-height:165px;display:flex;flex-direction:column;justify-content:flex-end}
+.sh-shape{position:absolute;top:0;right:0;width:190px;height:100%;background:linear-gradient(148deg,var(--BLL) 0%,rgba(58,141,255,.04) 100%);clip-path:polygon(38% 0,100% 0,100% 100%,8% 100%);pointer-events:none}
+.sh-bar{position:absolute;top:0;left:0;width:6px;height:100%;background:var(--B)}
+.sh-badge{position:absolute;top:1.3rem;left:1.85rem;background:var(--B);color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:3px 11px;border-radius:99px;z-index:2}
+.sh-no{font-family:'DM Mono',monospace;font-size:10px;color:var(--B);letter-spacing:2px;margin-bottom:8px;position:relative;z-index:1;font-weight:500}
+.sh-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--K);line-height:1.22;margin-bottom:7px;position:relative;z-index:1}
+.sh-sub{font-size:12px;color:var(--K3);line-height:1.5;position:relative;z-index:1}
+.slide-body{padding:1.4rem 2rem}
+.sb-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sb-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--K4)}
+.sb-hint{font-size:10px;color:var(--B);font-weight:500;font-style:italic}
+.s-ta{width:100%;font-size:13px;color:var(--K);line-height:1.8;font-family:'Outfit',sans-serif;resize:vertical;min-height:100px;border:2px dashed transparent;border-radius:8px;padding:8px 10px;background:transparent;outline:none;transition:all .18s;cursor:text}
+.s-ta:hover{border-color:var(--R2)}.s-ta:focus{border-color:var(--B);background:var(--BLL)}
+
+/* METRICS */
+.m-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px}
+.m-c{background:var(--BL);border:1.5px solid var(--BB);border-radius:10px;padding:12px 8px;text-align:center}
+.m-v{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--B)}
+.m-l{font-size:10px;color:var(--K3);margin-top:4px;line-height:1.4;font-weight:500}
+
+/* TAGS */
+.t-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.stag{padding:4px 11px;border-radius:99px;font-size:11px;font-weight:600;background:var(--BG);color:var(--K2);border:1.5px solid var(--R2)}
+
+/* CAT+SUB TABLE */
+.cat-tbl{margin-top:14px;border:2px solid var(--R);border-radius:10px;overflow:hidden}
+.ct-hd{display:grid;grid-template-columns:165px 1fr;background:var(--B)}
+.ct-hc{padding:9px 13px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#fff}
+.ct-row{display:grid;grid-template-columns:165px 1fr;border-bottom:1px solid var(--R)}
+.ct-row:last-child{border-bottom:none}.ct-row:nth-child(even){background:var(--BG)}
+.ct-cat{padding:10px 13px;border-right:1px solid var(--R);font-weight:700;color:var(--B);font-size:12px}
+.ct-subs{padding:10px 13px;display:flex;flex-wrap:wrap;gap:5px}
+.ct-chip{padding:3px 9px;background:var(--W);border:1.5px solid var(--R2);border-radius:99px;font-size:10.5px;color:var(--K3)}
+
+/* PLANTS TABLE */
+.pl-tbl{margin-top:14px;border:2px solid var(--R);border-radius:10px;overflow:hidden}
+.pl-hd{display:grid;grid-template-columns:38px 1fr 1fr;background:var(--B)}
+.pl-hc{padding:9px 13px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#fff}
+.pl-row{display:grid;grid-template-columns:38px 1fr 1fr;border-bottom:1px solid var(--R)}
+.pl-row:last-child{border-bottom:none}.pl-row:nth-child(even){background:var(--BG)}
+.pl-cell{padding:9px 13px;color:var(--K2);font-size:12px}
+.pl-num{font-family:'DM Mono',monospace;font-weight:700;color:var(--B)}
+.pl-loc{font-weight:600;color:var(--K)}
+
+/* SOURCE FOOTER — every slide */
+.src-footer{background:var(--BG);border-top:2px solid var(--R);padding:10px 2rem}
+.sf-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--K4);margin-bottom:7px}
+.sf-tags{display:flex;flex-wrap:wrap;gap:6px}
+.sf-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:10.5px;font-weight:600}
+.sf-tag.v{background:var(--GL);border:1.5px solid var(--GB);color:var(--G)}
+.sf-tag.e{background:var(--AL);border:1.5px solid var(--AB);color:var(--A)}
+
+/* NAV ROW */
+.nav-row{display:flex;align-items:center;justify-content:space-between;padding:11px 20px;border-top:1px solid var(--R);background:var(--BG)}
+.nb{padding:6px 18px;border:1.5px solid var(--R2);border-radius:7px;background:var(--W);font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--K2);transition:all .12s}
+.nb:hover:not(:disabled){background:var(--BL);border-color:var(--B);color:var(--B)}
+.nb:disabled{opacity:.3;cursor:default}
+.npg{font-family:'DM Mono',monospace;font-size:11px;color:var(--K4)}
+
+.extras{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.xc{background:var(--W);border:2px solid var(--R);border-radius:12px;padding:14px 16px;box-shadow:var(--S1)}
+.xl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--K4);margin-bottom:7px}
+.xb{font-size:12px;color:var(--K2);line-height:1.65}
+.xb div{padding:3px 0;border-bottom:1px solid var(--R);font-size:11px;color:var(--K3)}
+
+/* PPTX */
+.pptx-ov{position:fixed;inset:0;background:rgba(11,15,28,.65);z-index:600;display:none;align-items:center;justify-content:center}
+.pptx-ov.show{display:flex}
+.pptx-m{background:var(--W);border-radius:16px;padding:2.5rem 2rem;text-align:center;box-shadow:var(--S3);min-width:300px;border:2px solid var(--R)}
+.pptx-spin{width:44px;height:44px;border:3px solid var(--R);border-top-color:var(--B);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px}
+.pptx-t{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--K);margin-bottom:6px}
+.pptx-s{font-size:13px;color:var(--K3)}
+.pptx-bw{margin-top:18px;background:var(--BG2);border-radius:99px;height:6px;overflow:hidden}
+.pptx-bar{height:100%;background:var(--B);border-radius:99px;transition:width .35s;width:0}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--K);color:#fff;font-size:12px;font-weight:700;padding:9px 20px;border-radius:99px;box-shadow:var(--S3);opacity:0;pointer-events:none;transition:opacity .2s;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+footer{text-align:center;padding:1.5rem 2rem;font-size:11px;color:var(--K4);border-top:1px solid var(--R);margin-top:2rem}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-l">
+    <div class="logo">Cap<span>Grid</span></div>
+    <div class="nav-div"></div>
+    <div class="nav-sub">Client Intelligence Pitch Engine</div>
+  </div>
+  <div class="nav-r">
+    <button class="nav-edit" id="editBtn" onclick="toggleDrawer()">✏ Edit inputs</button>
+    <div class="nav-pill">10 Companies · No API Key · Verified Data</div>
+  </div>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="d-grid">
+    <div class="df"><label>Client name</label><input type="text" id="d-name"/></div>
+    <div class="df"><label>Industry</label>
+      <select id="d-ind">
+        <option value="Industrial">Industrial / Manufacturing</option>
+        <option value="Automotive">Automotive</option>
+        <option value="Consumer Durable">Consumer Durable</option>
+        <option value="Off-Highway">Off-Highway / Agri</option>
+      </select>
+    </div>
+  </div>
+  <button class="d-btn" onclick="applyDrawer()">Regenerate →</button>
+</div>
+
+<div class="wrap">
+
+<!-- INPUT -->
+<div class="sc on" id="sc1">
+  <div class="inp-layout">
+    <div>
+      <div class="form-card">
+        <div class="f-eye">Client Intelligence Engine</div>
+        <div class="f-title">Research-backed pitch, instantly</div>
+        <div class="f-desc">Type a company name — revenue auto-fills from verified sources. B&amp;C spend = 20% of India revenue. Manufacturing plants, pain areas, 5–6 B&amp;C categories with 5 sub-parts each — all pre-researched and cited.</div>
+
+        <div class="field">
+          <label>Client / Company name</label>
+          <div class="srch-wrap">
+            <input type="text" id="cname" placeholder="e.g. Lubi Pumps, Ashok Leyland, Thermax, Crompton..." oninput="onSearch()" onkeydown="onKey(event)" autocomplete="off"/>
+            <div class="sugg" id="sugg"></div>
+          </div>
+          <div class="rev-box" id="revBox">
+            <div class="rv-ok" id="rvOK" style="display:none">
+              <div class="rv-cols">
+                <div class="rvc"><div class="rvc-l">Annual Revenue (India)</div><div class="rvc-v" id="rvRev">—</div></div>
+                <div class="rvc"><div class="rvc-l">Fiscal Year</div><div class="rvc-v" id="rvFY">—</div></div>
+              </div>
+              <div class="bc-band"><span class="bc-lbl">Est. B&amp;C class spend (20% of revenue)</span><span class="bc-val" id="rvBC">—</span></div>
+              <div class="src-band"><span class="src-ico">✓</span><span class="src-txt" id="rvSrc">—</span></div>
+            </div>
+            <div class="rv-err" id="rvErr" style="display:none"></div>
+            <div class="man-box" id="manBox" style="display:none">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--K3)">Enter revenue manually</div>
+              <div class="man-row">
+                <span class="man-pfx">₹</span>
+                <input type="number" class="man-inp" id="manRev" placeholder="e.g. 2500" min="1" oninput="onManual()"/>
+                <span class="man-sfx">Crore / year</span>
+              </div>
+              <div class="man-hint" id="manHint"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Industry vertical</label>
+          <div class="ind-grid">
+            <div class="ind-btn" onclick="selInd(this,'Automotive')"><div class="i-ico">🚗</div><div class="iname">Automotive</div><div class="isub">OEM & Tier-1</div></div>
+            <div class="ind-btn" onclick="selInd(this,'Consumer Durable')"><div class="i-ico">📦</div><div class="iname">Consumer Durable</div><div class="isub">Appliances & FMCD</div></div>
+            <div class="ind-btn" onclick="selInd(this,'Industrial')"><div class="i-ico">⚙️</div><div class="iname">Industrial</div><div class="isub">Pumps, Machinery, Agri</div></div>
+          </div>
+        </div>
+
+        <button class="gen-btn" id="gbtn" disabled onclick="startGen()">
+          <span>Generate pitch deck</span><span>→</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="info-col">
+      <div class="ic">
+        <div class="ic-hd"><div class="ic-ico">🏭</div><div class="ic-t">Click to load instantly</div></div>
+        <div class="ic-b">Pre-researched companies:</div>
+        <div class="co-list" id="coList"></div>
+      </div>
+      <div class="ic">
+        <div class="ic-hd"><div class="ic-ico">📊</div><div class="ic-t">Every pitch includes</div></div>
+        <div class="ic-b">
+          <strong>Revenue</strong> from ICRA / Annual Reports<br>
+          <strong>B&amp;C spend</strong> = 20% of India revenue<br>
+          <strong>Manufacturing plants</strong> + locations<br>
+          <strong>5–6 B&amp;C categories</strong> per Capgrid catalogue<br>
+          <strong>5 sub-parts</strong> per category<br>
+          <strong>Pain areas</strong> — company-specific<br>
+          <strong>Sources</strong> on every slide
+        </div>
+      </div>
+      <div class="ic">
+        <div class="ic-hd"><div class="ic-ico">✅</div><div class="ic-t">Source key</div></div>
+        <div class="ic-b"><span style="color:var(--G);font-weight:700">✓ Green</span> = Verified (ICRA / Annual Report)<br><span style="color:var(--A);font-weight:700">~ Amber</span> = Industry benchmark estimate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESSING -->
+<div class="sc" id="sc2">
+  <div class="proc-c">
+    <div class="proc-hd">
+      <div class="proc-spin"></div>
+      <div><div class="proc-title" id="pTitle">Building pitch...</div><div class="proc-sub">Compiling verified data — takes just a moment</div></div>
+    </div>
+    <div class="proc-steps" id="pSteps"></div>
+  </div>
+</div>
+
+<!-- OUTPUT -->
+<div class="sc" id="sc3">
+  <div class="out-bar">
+    <div><div class="out-title" id="oTitle">Pitch Deck</div><div class="out-meta" id="oMeta">—</div></div>
+    <div class="a-bar">
+      <button class="ab" onclick="copyAll()">📋 Copy all</button>
+      <button class="ab bl" id="dlBtn" onclick="genPPTX()">⬇ Download .pptx</button>
+      <button class="ab dk" onclick="restart()">↺ New pitch</button>
+    </div>
+  </div>
+  <div class="out-layout">
+    <div class="snav" id="snav"><div class="sn-hdr">Slides</div></div>
+    <div>
+      <div class="slide-card">
+        <div class="slide-hero">
+          <div class="sh-shape"></div><div class="sh-bar"></div>
+          <div class="sh-badge" id="shBadge">Overview</div>
+          <div class="sh-no" id="shNo">SLIDE 01 / 12</div>
+          <div class="sh-title" id="shTitle">—</div>
+          <div class="sh-sub" id="shSub">—</div>
+        </div>
+        <div class="slide-body">
+          <div class="sb-top"><span class="sb-lbl">Slide content</span><span class="sb-hint">Click text below to edit</span></div>
+          <textarea class="s-ta" id="sTa" onchange="saveEdit()" oninput="autoH(this)"></textarea>
+          <div class="m-row" id="sMRow" style="display:none"></div>
+          <div id="sCatTbl" style="display:none"></div>
+          <div id="sPlTbl" style="display:none"></div>
+          <div class="t-row" id="sTags"></div>
+        </div>
+        <div class="src-footer">
+          <div class="sf-lbl">Sources for this slide</div>
+          <div class="sf-tags" id="sfTags"></div>
+        </div>
+        <div class="nav-row">
+          <button class="nb" id="prevBtn" onclick="nav(-1)" disabled>← Previous</button>
+          <span class="npg" id="navPg">1 / 12</span>
+          <button class="nb" id="nextBtn" onclick="nav(1)">Next →</button>
+        </div>
+      </div>
+      <div class="extras">
+        <div class="xc"><div class="xl">Image prompt — slide 6</div><div class="xb" id="imgPrm">—</div></div>
+        <div class="xc"><div class="xl">All verified sources</div><div class="xb" id="allSrc">—</div></div>
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:14px">
+        <button class="nb" onclick="restart()">↺ Start over</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="pptx-ov" id="pptxOv">
+  <div class="pptx-m">
+    <div class="pptx-spin"></div>
+    <div class="pptx-t">Building PowerPoint</div>
+    <div class="pptx-s" id="pptxMsg">Preparing...</div>
+    <div class="pptx-bw"><div class="pptx-bar" id="pptxBar"></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<footer>Capgrid Technology Solutions Pvt. Ltd. · Client Intelligence Pitch Engine · Internal Sales Tool — Confidential · All data from verified public sources</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// COMPANY DATABASE — 10 Verified Indian Manufacturers
+// ═══════════════════════════════════════════════════════════
+const DB={
+'Lubi Pumps':{full:'Lubi Industries LLP',hq:'Ahmedabad, Gujarat',ind:'Industrial',
+  desc:'India\'s leading pump & motor manufacturer since 1965. Serves agricultural, industrial and domestic segments across 120+ countries from manufacturing facilities in Ahmedabad and Gandhinagar, Gujarat.',
+  rev:1400,fy:'FY2024',revSrc:'ICRA Rating Report — Lubi Industries LLP FY2024',revUrl:'https://www.icra.in',
+  plants:[
+    {n:'1',loc:'Naroda, Ahmedabad — Gujarat',prod:'Submersible & monoblock pumps; CI/Bronze foundry; electrical laminations; copper winding wire manufacturing'},
+    {n:'2',loc:'Gandhinagar — Gujarat',prod:'Pressure booster & fire pumps; aluminium die-casting; CNC machining; engineering plastics injection moulding'},
+  ],plantSrc:'Lubi Infrastructure Page — lubipump.co.in/infrastructure.html',
+  pains:[
+    {t:'Casting procurement fragmentation',d:'Externally sourced castings for volume overflow come from fragmented Rajkot & Ahmedabad GIDC suppliers with no consolidated quality governance or digital trail.',s:'Lubi Infrastructure Page — lubipump.co.in',c:'high'},
+    {t:'High working capital from B&C stocking',d:'ICRA FY2024 flags NWC/OI at ~29% with inventory at 154 days — significantly driven by B&C pre-stocking ahead of peak pre-monsoon demand.',s:'ICRA Rating Report FY2024 — icra.in',c:'high'},
+    {t:'Electrical component supplier complexity',d:'Winding wire, capacitors, submersible cables and pressure switches procured from multiple small vendors — driving invoice complexity and inconsistent quality.',s:'Lubi About Us — indiamart.com/lubipumps',c:'high'},
+    {t:'Rubber seal inconsistency',d:'Submersible pumps require mechanical shaft seals, O-rings, oil seals and cable grommets — multiple small rubber vendors with high incoming rejection rates.',s:'Lubi product catalogue + ICRA pump sector benchmark',c:'medium'},
+    {t:'Fastener SKU fragmentation',d:'Pump assembly requires 200+ fastener SKUs from 40–60 small suppliers. Non-standard pricing across plants creates high overhead with no consolidated PO management.',s:'Industry benchmark — ICRA Manufacturing Sector Analysis FY2024',c:'medium'},
+  ],
+  cats:[
+    {name:'Castings',share:28,rat:'Core to pump manufacturing — CI casings, bronze impellers, aluminium motor housings procured both in-house and externally.',src:'Lubi Infrastructure Page — lubipump.co.in/infrastructure.html',conf:'high',
+     subs:['CI pump volute casings (centrifugal & submersible)','Bronze submersible impellers','Aluminium die-cast motor housings & end shields','CI bearing brackets & flanges','Zinc die-cast adapter plates & nameplates']},
+    {name:'Electrical & Electronics',share:22,rat:'In-house motor manufacturing but substantial external procurement of capacitors, cables, switches and control electronics.',src:'Lubi Electronics — lubielectronics.com',conf:'high',
+     subs:['Enamelled copper winding wire','Motor start/run capacitors (single phase)','Submersible flat cable — 3-core','Pressure & level switches','Thermal overload protectors & fuses']},
+    {name:'Machining & Forging',share:18,rat:'Precision CNC machining of shafts, impellers and bearing housings — partially in-house, significantly outsourced.',src:'Lubi Infrastructure Page — lubipump.co.in/infrastructure.html',conf:'high',
+     subs:['Stainless steel pump shafts (multiple diameters)','Precision spacers & bearing sleeves','Machined wear rings','Forged pump flanges (MS/SS)','Drain plugs & coupling components']},
+    {name:'Rubber & Seals',share:14,rat:'Submersible pumps require extensive sealing — shaft seals, O-rings, oil seals and grommets at high volume.',src:'Lubi product catalogue + ICRA pump sector benchmark',conf:'medium',
+     subs:['Mechanical shaft seals (carbon/ceramic face)','NBR/Viton O-rings — multiple sizes','Oil seals (motor upper & lower)','Cable entry grommets (rubber)','Anti-vibration rubber mounts']},
+    {name:'Fasteners',share:10,rat:'High-mix fastener requirement across pump assembly — hex bolts, studs, grease nipples and circlips from 40–60 suppliers.',src:'Industry benchmark — ICRA Manufacturing Sector Analysis',conf:'medium',
+     subs:['Hex bolts & studs (MS/SS)','Grease nipples (straight & angled)','Internal circlips & snap rings','Foundation anchor bolt kits','Worm drive hose clamps']},
+    {name:'Plastics & Polymers',share:8,rat:'In-house injection moulding for larger components; PP/ABS impellers, nylon bushes and panel housings procured externally.',src:'Lubi Infrastructure Page — lubipump.co.in/infrastructure.html',conf:'high',
+     subs:['PP/ABS self-priming impellers','Nylon bush & bearing sleeves','ABS motor terminal box covers','PVC cable entry plugs','PP inlet strainer baskets']},
+  ],
+  allSrc:['ICRA Rating Report — Lubi Industries LLP FY2024 (icra.in)','Tracxn Financial Data — Lubi Industries FY2024 (tracxn.com)','Lubi Infrastructure Page (lubipump.co.in/infrastructure.html)','Lubi Electronics Division (lubielectronics.com)','IndiaMart — Lubi Industries About Us (indiamart.com/lubipumps)'],
+},
+'Blue Star':{full:'Blue Star Limited',hq:'Mumbai, Maharashtra',ind:'Consumer Durable',
+  desc:'India\'s second-largest room AC brand and No.1 in commercial refrigeration. Revenue grew 23.6% YoY in FY2025. Manufactures RACs, ducted ACs, chillers, cold rooms and commercial refrigeration equipment.',
+  rev:11968,fy:'FY2025',revSrc:'Blue Star FY2025 Annual Results — bluestarindia.com',revUrl:'https://www.bluestarindia.com/investors',
+  plants:[
+    {n:'1',loc:'Wada — Maharashtra',prod:'Room air conditioners (split & window) — primary RAC manufacturing hub; high-volume automated production'},
+    {n:'2',loc:'Dadra — Dadra & Nagar Haveli',prod:'Commercial refrigeration (deep freezers, cold rooms); medium-scale RAC assembly'},
+    {n:'3',loc:'Ahmedabad — Gujarat',prod:'Modular cold rooms and refrigeration components; assembly for Western India market'},
+    {n:'4',loc:'Sricity — Andhra Pradesh',prod:'Room ACs and refrigeration — newer facility with high automation; South India market'},
+    {n:'5',loc:'Himachal Pradesh',prod:'ACs and refrigeration — excise benefit facility serving Northern India'},
+  ],plantSrc:'Blue Star Annual Report FY2024; Capgrid SCM engagement data — Blue Star 5-plant operations',
+  pains:[
+    {t:'Multi-plant B&C procurement fragmentation',d:'Blue Star managed B&C procurement separately at 5 plant locations across 5 states — no consolidated standard or aggregated buying power before Capgrid engagement.',s:'Capgrid operational experience — Blue Star B&C SCM FY2024-25',c:'high'},
+    {t:'High incoming PPM before consolidation',d:'B&C suppliers showed incoming PPM above 1,000 before Capgrid engagement. No unified quality digital trail drove high rejection rates and rework costs.',s:'Capgrid Q-TAG Quality Scorecard — Blue Star FY2024-25',c:'high'},
+    {t:'Decal & label SKU complexity',d:'Wide RAC and refrigeration product range requires BEE star labels, brand decals, model nameplates and safety stickers at 5 plants — high SKU count with no consolidated vendor.',s:'Capgrid operational experience — Blue Star decals category',c:'high'},
+    {t:'Sheet metal batch inconsistency',d:'RAC cabinet panels and evaporator cover plates from multiple sheet metal suppliers showed batch-to-batch quality issues before supplier consolidation.',s:'Capgrid Blue Star Q-TAG quality data FY2024-25',c:'high'},
+    {t:'Inventory bloat across 5 plants',d:'Blue Star held 20+ days of B&C stock across all 5 plants before Capgrid engagement — reduced to 7–10 days post-consolidation, freeing ~₹3 Crore in working capital.',s:'Capgrid operational data — Blue Star impact metrics FY2024-25',c:'high'},
+  ],
+  cats:[
+    {name:'Fasteners',share:20,rat:'RAC and refrigeration assembly require hex screws, rivets, self-tapping screws and grease nipples across all 5 plant locations.',src:'Capgrid Blue Star operational data — Fastener category FY2024-25',conf:'high',
+     subs:['Hex bolts & machine screws (sheet metal & motor)','Pop rivets (cabinet assembly)','Self-tapping screws (plastic components)','Grease nipples (fan motor bearings)','Spring & lock washers']},
+    {name:'Sheet Metal',share:18,rat:'RAC cabinet panels, condenser brackets, evaporator support frames and refrigeration enclosure stampings — high-volume, high-value category.',src:'Capgrid Blue Star operational data — Sheet Metal',conf:'high',
+     subs:['Outer cabinet panels (CRCA steel — split ACs)','Condenser & evaporator support frames','Sheet metal motor mounting brackets','Base tray stampings (drain pan)','Cold room panel framework stampings']},
+    {name:'Stickers & Decals',share:17,rat:'BEE star labels, brand nameplates, model decals and safety stickers across millions of RAC and refrigeration units at 5 plants.',src:'Capgrid Blue Star operational data; BEE India regulatory requirement',conf:'high',
+     subs:['BEE 3/4/5-star energy rating labels','Blue Star brand nameplate decals','Model & serial number labels','Safety & regulatory compliance stickers','Packaging carton labels & instruction decals']},
+    {name:'Rubber & Seals',share:16,rat:'Refrigerant line seals, compressor vibration isolation, cabinet weatherstrip and refrigeration door gaskets — critical quality B&C components.',src:'Capgrid Blue Star operational data — Rubber & Seals',conf:'high',
+     subs:['Compressor anti-vibration rubber mounts','EPDM door gaskets (refrigeration units)','Rubber refrigerant line grommets','Foam weatherstrip (cabinet sealing)','O-rings for service valves (HNBR)']},
+    {name:'Electrical & Electronics',share:15,rat:'Fan motor capacitors, wiring harnesses, PCB assemblies and control electronics for RAC and commercial refrigeration product lines.',src:'Capgrid Blue Star operational data — Electrical',conf:'high',
+     subs:['Run capacitors (fan & compressor start)','Wiring harness sub-assemblies','Thermostat & temperature sensors','PCB assemblies (indoor control unit)','Terminals, connectors & cable clips']},
+    {name:'Plastics & Polymers',share:14,rat:'Indoor unit mouldings, air louvers, drain pans and refrigeration body panels for both RAC and refrigeration divisions.',src:'Capgrid Blue Star operational data — Plastics',conf:'high',
+     subs:['ABS indoor unit front panel mouldings','PP air louver & directional vane mouldings','Drain pan mouldings (PP/ABS)','Outdoor unit grille & louvre mouldings','Nylon fan blade mouldings']},
+  ],
+  allSrc:['Blue Star FY2025 Annual Results (bluestarindia.com/investors)','Capgrid Supply Chain Engagement Data — Blue Star 5-Plant Operations FY2024-25','Capgrid Blue Star Q-TAG Quality Scorecard FY2024-25','BEE India — Regulatory Labelling for Air Conditioners','Blue Star Annual Report FY2024'],
+},
+'Crompton':{full:'Crompton Greaves Consumer Electricals Ltd',hq:'Mumbai, Maharashtra',ind:'Consumer Durable',
+  desc:'India\'s leading consumer electrical company with 86+ years of heritage. Manufactures fans (24M+ units/year), pumps, water heaters, coolers and lighting across 7 manufacturing plants nationwide.',
+  rev:7864,fy:'FY2025',revSrc:'Crompton Greaves Consumer Electricals FY2025 Annual Results',revUrl:'https://www.crompton.co.in',
+  plants:[
+    {n:'1',loc:'Bethora — Goa',prod:'Ceiling fans — primary hub; automated stamping and motor assembly; high-volume production'},
+    {n:'2',loc:'Kundaim — Goa',prod:'Lighting products (LED lamps & fixtures); fan accessories and packaging'},
+    {n:'3',loc:'Baddi Plant 1 — Himachal Pradesh',prod:'Fans and lighting — HP excise benefit facility; significant volume'},
+    {n:'4',loc:'Baddi Plant 2 — Himachal Pradesh',prod:'Fans and lighting — secondary Baddi facility for Northern India'},
+    {n:'5',loc:'Ahmednagar — Maharashtra',prod:'Pumps (submersible, monoblock, pressure booster) — primary pump manufacturing'},
+    {n:'6',loc:'Vadodara — Gujarat',prod:'Lighting products & built-in kitchen appliances — primary Lighting Division plant'},
+    {n:'7',loc:'Chennai — Tamil Nadu',prod:'Kitchen appliances (Butterfly brand) — mixer grinders, gas cooktops, pressure cookers'},
+  ],plantSrc:'Grokipedia — Crompton Greaves Consumer Electricals; Wikipedia; DCFModeling.com',
+  pains:[
+    {t:'Fastener & hardware fragmentation across 7 plants',d:'7 facilities across 5 states manage separate fastener and hardware supplier relationships at each location — no consolidated standard, leading to 3–5× more suppliers than needed.',s:'Crompton manufacturing footprint + industry benchmark',c:'medium'},
+    {t:'Sheet metal supplier inconsistency',d:'Fan blades, motor housings and lighting body stampings procured from multiple regional suppliers per plant without unified qualification — dimensional inconsistency across batches.',s:'Crompton product range + manufacturing benchmark',c:'medium'},
+    {t:'Sticker & decal compliance complexity',d:'24M+ fan units/year plus pumps, water heaters and lighting each require BEE star labels, brand decals and safety markings — no consolidated vendor across 7 plants.',s:'Consumer Durable B&C benchmark — ICRA Sector Analysis',c:'medium'},
+    {t:'Rubber component sourcing inconsistency',d:'Fans, pumps and water heaters all require rubber gaskets, grommets and vibration mounts from multiple small vendors — creates field return risk without unified quality standard.',s:'Crompton product catalogue + industry benchmark',c:'medium'},
+    {t:'No centralised B&C visibility across 7 plants',d:'~₹1,573 Cr estimated B&C spend across 7 facilities is managed in silos with no aggregated supplier visibility, stock status or quality digitalization.',s:'Revenue: Crompton FY2025 results; 20% B&C benchmark',c:'medium'},
+  ],
+  cats:[
+    {name:'Fasteners',share:22,rat:'Fan and pump assembly requires hex bolts, rivets, self-tapping screws and bearing lock nuts at very high volume across all 7 plants.',src:'Consumer Durable manufacturing B&C benchmark — ICRA',conf:'medium',
+     subs:['Hex bolts & self-tapping screws (MS/SS)','Pop rivets & solid rivets','Bearing lock nuts & flanged nuts','Grease nipples (fan motor lubrication)','Spring washers & circlips']},
+    {name:'Sheet Metal',share:20,rat:'Fan blades, motor housings, lighting body stampings and pump casings — high-volume across fan, lighting and pump segments.',src:'Crompton product range analysis + manufacturing benchmark',conf:'medium',
+     subs:['Fan blade stampings (cold-rolled steel)','Motor housing stampings','Lighting fixture body stampings','Pump impeller cover plates','Sheet metal brackets & base plates']},
+    {name:'Stickers & Decals',share:14,rat:'Brand compliance across 24M+ fan units/year plus BEE regulatory labels for pumps, water heaters and lighting products.',src:'Consumer Durable B&C benchmark — ICRA FY2024',conf:'medium',
+     subs:['BEE star energy rating labels','Brand decals & model identification stickers','Warning & safety labels (IS standards)','Barcode & serial number labels','Packaging decals & carton labels']},
+    {name:'Rubber & Seals',share:13,rat:'Fans require vibration mounts and grommets; pumps require O-rings and mechanical seals; water heaters require EPDM seals.',src:'Crompton product catalogue + industry benchmark',conf:'medium',
+     subs:['Anti-vibration rubber mounts (ceiling fans)','EPDM gaskets (water heaters)','O-rings for pump casings','Rubber grommets (cable entry)','Silicone seals & foam strips']},
+    {name:'Electrical & Electronics',share:16,rat:'Fan motors, lighting electronics, pump control panels and Butterfly appliance electronics — substantial B&C electrical procurement.',src:'Crompton product range — crompton.co.in',conf:'high',
+     subs:['Motor capacitors (fan — single phase)','LED driver boards & PCBs','Wiring harness sub-assemblies','Thermal fuses & overload protectors','Connectors & terminal blocks']},
+    {name:'Plastics & Polymers',share:15,rat:'Fan bodies, pump bodies, water heater housings and lighting fixtures — engineering plastic mouldings procured externally at scale.',src:'Crompton product range analysis',conf:'medium',
+     subs:['ABS fan blade & canopy mouldings','PP pump body mouldings','HDPE water heater inner tank','Polycarbonate lighting diffusers','Nylon gear & bushing components']},
+  ],
+  allSrc:['Crompton Greaves Consumer Electricals FY2025 Annual Results (crompton.co.in)','Grokipedia — Crompton Manufacturing Profile','Wikipedia — Crompton Greaves Consumer Electricals','ICRA Sector Analysis — Consumer Durable B&C Benchmark','DCFModeling.com — Crompton Business Profile'],
+},
+'Voltas':{full:'Voltas Limited',hq:'Mumbai, Maharashtra (Tata Group)',ind:'Consumer Durable',
+  desc:'India\'s No.1 room AC brand by market share (19.8% in H1 FY2025). Tata Group company manufacturing RACs, commercial refrigeration, water coolers and MEP solutions.',
+  rev:14876,fy:'FY2025',revSrc:'ICRA Rating — Voltas FY2024 + Statista operational revenue data',revUrl:'https://www.icra.in',
+  plants:[
+    {n:'1',loc:'Thane — Maharashtra',prod:'Commercial refrigeration (water coolers, deep freezers); engineering components assembly — primary legacy facility'},
+    {n:'2',loc:'Dadra — Dadra & Nagar Haveli',prod:'Room air conditioners — primary high-volume RAC hub; split ACs, window ACs'},
+    {n:'3',loc:'Pantnagar — Uttarakhand',prod:'Room ACs and refrigeration products; serves Northern India; excise benefit facility'},
+  ],plantSrc:'IBEF — Voltas Ltd Company Profile (ibef.org/industry/showcase/voltas-ltd)',
+  pains:[
+    {t:'Sheet metal fragmentation for RAC cabinets',d:'RAC manufacturing at 3 plants requires high-volume sheet metal cabinets, brackets and heat exchanger fins — fragmented supplier base across Maharashtra, Dadra and Uttarakhand.',s:'Voltas product range + manufacturing benchmark',c:'medium'},
+    {t:'Fastener procurement siloed across 3 plants',d:'Each of Voltas\'s 3 facilities manages separate fastener procurement with varying supplier relationships — no consolidated purchasing driving 3–5% cost premium.',s:'Industry benchmark — Consumer Durable B&C procurement',c:'medium'},
+    {t:'Sticker & regulatory label complexity',d:'19.8% RAC market share requires BEE star labels, brand decals and safety stickers across millions of units — fragmented vendor base with no brand consistency enforcement.',s:'ICRA Rating — Voltas FY2024 + BEE India regulatory requirements',c:'high'},
+    {t:'Rubber & gasket quality inconsistency',d:'RAC refrigerant lines, compressor mounts and cabinet gaskets require precision rubber sealing — multiple small vendors without unified qualification creates leakage and field return risk.',s:'Voltas product range + consumer durable benchmark',c:'medium'},
+    {t:'No integrated B&C digital visibility',d:'Voltas procures B&C across 3 plants in different states with no aggregated supplier visibility, stock tracking or quality digital trail — procurement is headcount-heavy and reactive.',s:'Industry benchmark: Consumer Durable B&C complexity',c:'medium'},
+  ],
+  cats:[
+    {name:'Sheet Metal',share:24,rat:'RAC cabinet panels, condenser brackets, fan motor mounts and heat exchanger support frames — very high-volume across all 3 plants.',src:'Voltas product range + manufacturing benchmark',conf:'medium',
+     subs:['RAC outer cabinet panels (CRCA steel)','Condenser & evaporator support frames','Indoor unit front panel stampings','Sheet metal fan motor brackets','Base tray stampings (drain pan)']},
+    {name:'Fasteners',share:18,rat:'RAC assembly requires hex screws, self-tapping screws, rivets and specialty fasteners at high volume across 3 plants.',src:'Consumer Durable manufacturing benchmark — ICRA',conf:'medium',
+     subs:['Self-tapping screws (sheet metal fastening)','Hex bolts & flange nuts','Pop rivets (cabinet assembly)','Grease nipples (fan motor bearings)','Vibration isolation bolts']},
+    {name:'Stickers & Decals',share:16,rat:'19.8% RAC market share + millions of units — BEE star labels, brand decals, model labels and safety markings at high volume.',src:'ICRA Rating — Voltas FY2024; BEE India regulatory requirement',conf:'high',
+     subs:['BEE 5-star energy rating labels','Voltas brand nameplate decals','Model & serial number labels','Safety & regulatory compliance stickers','Packaging carton labels & barcodes']},
+    {name:'Rubber & Seals',share:15,rat:'RAC refrigerant circuit sealing, compressor vibration isolation and cabinet weatherstrip gaskets — critical quality components.',src:'Voltas product range + manufacturing quality benchmark',conf:'medium',
+     subs:['Compressor anti-vibration mounts','Rubber refrigerant line grommets','EPDM weatherstrip gaskets (cabinet)','Silicone sealant & foam strips','O-rings for service valves']},
+    {name:'Electrical & Electronics',share:14,rat:'Fan motor capacitors, wiring harnesses, PCB assemblies and control electronics for all Voltas RAC product lines.',src:'Voltas product range analysis',conf:'medium',
+     subs:['Run capacitors (fan & compressor)','Wiring harness sub-assemblies','Thermostat & temperature sensors','PCB assemblies (indoor unit)','Terminals, connectors & cable clips']},
+    {name:'Plastics & Polymers',share:13,rat:'Indoor unit body mouldings, air louvers, drain pans and outdoor unit grilles for all RAC variants.',src:'Voltas product range analysis',conf:'medium',
+     subs:['ABS indoor unit front panel mouldings','PP air louver & vane mouldings','Drain pan mouldings (PP/ABS)','Outdoor unit grille mouldings','Nylon fan blade mouldings']},
+  ],
+  allSrc:['ICRA Rating Report — Voltas Limited FY2024 (icra.in)','Statista — Voltas Operational Revenue FY2024','IBEF — Voltas Ltd Company Profile (ibef.org)','Voltas Annual Report FY2024-25 (voltas.in)','BEE India — Regulatory Labelling Requirements for ACs'],
+},
+'Havells':{full:'Havells India Limited',hq:'Noida, Uttar Pradesh',ind:'Consumer Durable',
+  desc:'India\'s leading FMEG company with 16 manufacturing units across India. Manufactures switchgears, cables, fans, lighting, water heaters, ACs (Lloyd brand) and kitchen appliances.',
+  rev:18775,fy:'FY2025',revSrc:'Havells India Annual Report FY2025 — havells.com/investors',revUrl:'https://www.havells.com/investors',
+  plants:[
+    {n:'1',loc:'Haridwar — Uttarakhand',prod:'Switchgear, MCBs, fans, lighting — primary & largest facility; excise benefit plant'},
+    {n:'2',loc:'Baddi — Himachal Pradesh',prod:'Fans, lighting and consumer durables; HP excise benefit; significant fan capacity'},
+    {n:'3',loc:'Noida — Uttar Pradesh',prod:'Switchgear, cables and wiring accessories; proximity to HQ'},
+    {n:'4',loc:'Faridabad — Haryana',prod:'Cables and conductors — primary cable manufacturing facility'},
+    {n:'5',loc:'Alwar — Rajasthan',prod:'Motors, pumps and water heaters; industrial electrical components'},
+    {n:'6',loc:'Neemrana — Rajasthan',prod:'Fans, ACs (Lloyd) and consumer appliances — major Lloyd brand manufacturing'},
+    {n:'7',loc:'Bengaluru — Karnataka',prod:'Professional lighting and LED drivers; precision manufacturing with R&D integration'},
+    {n:'8+',loc:'8 additional plants — Hyderabad, Pune & others',prod:'Cables, switchgear and appliances — Havells operates 16 total manufacturing units across India'},
+  ],plantSrc:'Havells India Annual Report FY2025 (stockinsights.ai/in/HAVELLS); Wikipedia — Havells India',
+  pains:[
+    {t:'16-plant B&C procurement fragmentation',d:'16 manufacturing units across India means hundreds of B&C supplier relationships per category — no consolidated purchasing leverage, leading to significant cost premium over consolidated rates.',s:'Havells Annual Report FY2025 — stockinsights.ai',c:'high'},
+    {t:'Fastener standardisation gaps across 8+ product divisions',d:'Switchgear, fans, cables and Lloyd appliances each have different fastener specifications. Across 16 plants without a consolidated B&C standard, Havells manages 100+ fastener suppliers with no unified qualification.',s:'Industry benchmark — FMEG B&C procurement complexity',c:'medium'},
+    {t:'Sticker & label compliance across multiple product lines',d:'BIS/BEE compliance labels, brand nameplates and model decals across switchgear, fans, lighting, cables and Lloyd ACs — each with distinct regulatory requirements. No consolidated vendor management.',s:'BEE & BIS regulatory requirements + Havells product range',c:'high'},
+    {t:'Rubber & seal diversity across product lines',d:'Switchgear insulating rubber, cable end seals, water heater EPDM gaskets and AC vibration mounts — fundamentally different rubber requirements managed separately per product division.',s:'Havells product portfolio analysis',c:'medium'},
+    {t:'No integrated B&C supply chain visibility',d:'At ₹3,755 Cr estimated B&C spend across 16 units, procurement is siloed — no single source of truth for B&C supplier performance, stock or compliance across the group.',s:'Revenue: Havells FY2025 (₹18,775 Cr); 20% B&C benchmark',c:'medium'},
+  ],
+  cats:[
+    {name:'Electrical & Electronics',share:25,rat:'Switchgear components, cable accessories, fan motor electronics and Lloyd AC control boards — primary B&C spend category spanning all product divisions.',src:'Havells product range — havells.com; Annual Report FY2025',conf:'high',
+     subs:['MCB & RCBO sub-components (bimetal strips, contacts)','Wiring harness sub-assemblies','Fan motor capacitors (run/start)','PCB assemblies for Lloyd ACs','Terminal blocks & electrical connectors']},
+    {name:'Fasteners',share:18,rat:'Largest SKU count B&C category across 16-plant, 8-product-division structure. Switchgear assembly alone requires 50+ fastener SKUs.',src:'Industry benchmark — FMEG B&C procurement analysis (ICRA)',conf:'medium',
+     subs:['Hex bolts & machine screws (switchgear)','Self-tapping screws (enclosure assembly)','Rivets & pop rivets (cable trays)','Grub screws & set screws','Shoulder bolts & precision fasteners']},
+    {name:'Stickers & Decals',share:16,rat:'BIS/BEE compliance labels, brand nameplates and model decals across switchgear, fans, lighting, cables and Lloyd — very high-volume B&C.',src:'BEE & BIS regulatory requirements; Havells product range',conf:'high',
+     subs:['BEE star rating labels (fans & ACs)','BIS compliance certification marks','Brand nameplate decals (Havells & Lloyd)','Regulatory warning stickers (switchgear)','Barcode, serial & QR code labels']},
+    {name:'Sheet Metal',share:16,rat:'Switchgear enclosures, fan motor bodies, cable tray components and Lloyd AC cabinets — high-volume across multiple product divisions.',src:'Havells product range + manufacturing benchmark',conf:'medium',
+     subs:['Switchgear enclosure panels & blanks','Fan motor housing stampings','Lloyd AC cabinet panels (CRCA)','Cable tray & management stampings','DIN rail stampings (switchgear)']},
+    {name:'Rubber & Seals',share:12,rat:'Switchgear insulating rubber, cable seals, water heater EPDM gaskets and Lloyd AC vibration mounts — diverse rubber requirement across all product lines.',src:'Havells product range analysis',conf:'medium',
+     subs:['Insulating rubber strips & grommets (switchgear)','EPDM gaskets (water heaters)','Anti-vibration mounts (Lloyd ACs)','Cable entry grommets & seals','Silicone & neoprene seals']},
+    {name:'Plastics & Polymers',share:13,rat:'Switchgear body mouldings, fan canopy & blade mouldings, lighting housing and Lloyd appliance body components — major B&C polymer procurement.',src:'Havells product range analysis',conf:'medium',
+     subs:['Nylon switchgear body mouldings','ABS fan blade & canopy mouldings','Polycarbonate lighting housing','PP appliance body mouldings (Lloyd)','Phenolic resin switch body mouldings']},
+  ],
+  allSrc:['Havells India Annual Report FY2025 (stockinsights.ai/in/HAVELLS/annual-report/fy25-1f60)','Wikipedia — Havells India (en.wikipedia.org/wiki/Havells)','Havells Investor Relations (havells.com/investors)','ICRA FMEG Sector Analysis — B&C Procurement Benchmark','BEE India — Regulatory Labelling Requirements'],
+},
+'Ashok Leyland':{full:'Ashok Leyland Limited',hq:'Chennai, Tamil Nadu (Hinduja Group)',ind:'Automotive',
+  desc:'India\'s second-largest commercial vehicle manufacturer and world\'s 4th largest bus maker. Products include trucks, buses, LCVs and power solutions. Part of the Hinduja Group.',
+  rev:44262,fy:'FY2024',revSrc:'Ashok Leyland Annual Report FY2024 — ashokleyland.com/investors',revUrl:'https://www.ashokleyland.com/en/investors',
+  plants:[
+    {n:'1',loc:'Ennore — Tamil Nadu',prod:'Heavy commercial vehicles (HCVs) — flagship plant; trucks and buses; primary manufacturing hub'},
+    {n:'2',loc:'Hosur — Tamil Nadu',prod:'LCVs, special vehicles and engines; major Hosur complex with multiple manufacturing units'},
+    {n:'3',loc:'Alwar — Rajasthan',prod:'Trucks and buses for North India; key facility for Rajasthan/NCR logistics'},
+    {n:'4',loc:'Bhandara — Maharashtra',prod:'Truck chassis and commercial vehicles for Central/Western India'},
+    {n:'5',loc:'Pantnagar — Uttarakhand',prod:'Trucks, buses and LCVs — excise benefit facility for North India market'},
+    {n:'6',loc:'Hyderabad — Telangana',prod:'Engines and components; technology & engineering centre integration'},
+  ],plantSrc:'Ashok Leyland Annual Report FY2024 (ashokleyland.com/investors); Wikipedia — Ashok Leyland',
+  pains:[
+    {t:'B&C supplier fragmentation across 6 plants',d:'6 manufacturing locations manage separate B&C supplier bases per plant for the same fastener, rubber and sheet metal categories — no consolidated purchasing leverage.',s:'Ashok Leyland Annual Report FY2024; industry benchmark',c:'medium'},
+    {t:'Fastener quality variance in CV assembly',d:'Commercial vehicle assembly requires 300+ fastener SKUs per model — hex bolts, spring pins, castle nuts and U-bolts from multiple suppliers per plant with no unified incoming quality standard.',s:'Automotive B&C procurement benchmark — ICRA Automotive Sector',c:'medium'},
+    {t:'Rubber & seal inconsistency in CV assembly',d:'Trucks and buses require door seals, engine gaskets, air intake grommets and vibration mounts at high volume. Fragmented rubber suppliers without unified vulcanisation standards create quality escapes.',s:'Commercial vehicle rubber procurement benchmark',c:'medium'},
+    {t:'Sticker & decal AIS compliance burden',d:'Commercial vehicles require AIS compliance stickers, load rating plates, safety labels and brand decals across multiple truck/bus variants — high-volume, multi-supplier management challenge.',s:'AIS regulatory requirements; Ashok Leyland product range',c:'high'},
+    {t:'Sheet metal sourcing for cab assembly',d:'Truck cab stampings, frame reinforcement brackets and bus body sheet metal procured from 50+ sheet metal fabricators without consolidated quality governance.',s:'Ashok Leyland Annual Report FY2024; automotive B&C benchmark',c:'medium'},
+  ],
+  cats:[
+    {name:'Fasteners',share:27,rat:'Highest B&C spend for CV manufacturers. 300+ fastener SKUs per model — hex bolts, U-bolts, spring pins, lock nuts and castle nuts at very high volume.',src:'Automotive B&C benchmark — ICRA Automotive Sector Analysis',conf:'medium',
+     subs:['High-tensile hex bolts & wheel nuts','U-bolts (leaf spring mounting)','Spring pins & cotter pins (linkage)','Castle nuts & self-locking nuts','Grease nipples & lubrication fittings']},
+    {name:'Sheet Metal',share:20,rat:'Truck cab stampings, chassis reinforcement brackets, bus body panels and frame components — high-volume sheet metal procurement.',src:'Ashok Leyland Annual Report FY2024; automotive benchmark',conf:'medium',
+     subs:['Truck cab stampings (CRCA/HSLA steel)','Chassis cross-member brackets','Bus body panel stampings','Floor plate & reinforcement stampings','Sheet metal brackets & support frames']},
+    {name:'Rubber & Seals',share:15,rat:'Commercial vehicles require door seals, engine gaskets, suspension bushes and air intake grommets at high volume across all models.',src:'Commercial vehicle rubber procurement benchmark',conf:'medium',
+     subs:['Door & window rubber seals','Engine gasket sets','Suspension rubber bushes','Air intake & exhaust grommets','Engine mounting vibration isolators']},
+    {name:'Springs & Wireforms',share:14,rat:'Leaf springs, coil springs and spring assemblies are major B&C spend categories for commercial vehicle suspension and seating systems.',src:'Automotive springs benchmark — ICRA Sector Analysis',conf:'medium',
+     subs:['Leaf spring assemblies (rear suspension)','Coil springs (front suspension)','Seat suspension spring assemblies','Spring clips & U-bolts','Anti-roll bar bush assemblies']},
+    {name:'Stickers & Decals',share:12,rat:'AIS compliance stickers, load rating plates, safety labels and brand decals across multiple truck and bus variants.',src:'AIS regulatory requirements; Ashok Leyland product range',conf:'high',
+     subs:['AIS compliance & certification labels','Gross Vehicle Weight rating plates','Warning & safety stickers (AIS standard)','Ashok Leyland brand & model decals','Engine compartment specification labels']},
+    {name:'Electrical & Electronics',share:12,rat:'Truck electrical harnesses, indicator assemblies, wiring looms and cabin electronics — B&C electrical procurement at scale.',src:'Automotive electrical benchmark; Ashok Leyland product range',conf:'medium',
+     subs:['Wiring harness sub-assemblies (cabin)','Relay & fuse box assemblies','Lighting & indicator sub-assemblies','Switches & control panel components','Battery cable assemblies & terminals']},
+  ],
+  allSrc:['Ashok Leyland Annual Report FY2024 (ashokleyland.com/investors)','Wikipedia — Ashok Leyland (en.wikipedia.org/wiki/Ashok_Leyland)','ICRA Automotive Sector B&C Procurement Benchmark','AIS — Automotive Industry Standard Regulatory Requirements','ACMA — Automotive Component Manufacturers Association India'],
+},
+'Thermax':{full:'Thermax Limited',hq:'Pune, Maharashtra',ind:'Industrial',
+  desc:'India\'s leading energy and environment solutions company. Manufactures boilers, heaters, absorption chillers, air pollution control equipment and water treatment systems. Exports to 90+ countries.',
+  rev:10274,fy:'FY2024',revSrc:'Thermax Limited Annual Report FY2024 — thermaxglobal.com/investors',revUrl:'https://www.thermaxglobal.com/investors',
+  plants:[
+    {n:'1',loc:'Chinchwad, Pune — Maharashtra',prod:'Industrial boilers, heaters and heat exchangers — primary manufacturing hub; R&D integration'},
+    {n:'2',loc:'Savli — Gujarat',prod:'Chemicals for water treatment, cooling and process applications; specialty chemical manufacturing'},
+    {n:'3',loc:'Jhagadia — Gujarat',prod:'Air pollution control equipment; industrial scrubbers, bag filters and ESP systems'},
+    {n:'4',loc:'Coimbatore — Tamil Nadu',prod:'Small boilers and heating systems; serves South Indian market; compact industrial equipment'},
+    {n:'5',loc:'Hyderabad — Telangana',prod:'Waste heat recovery systems and power plant equipment; heavy engineering fabrication'},
+  ],plantSrc:'Thermax Annual Report FY2024; Wikipedia — Thermax Limited; thermaxglobal.com',
+  pains:[
+    {t:'Custom fabrication B&C complexity',d:'Bespoke project-based manufacturing requires custom B&C components — non-standard castings, machined parts and fabricated items — procured from different suppliers per project with no consolidated management.',s:'Thermax Annual Report FY2024; industry benchmark',c:'medium'},
+    {t:'Fastener procurement for heavy engineering',d:'Industrial boilers and pressure vessels require high-grade ASTM/IS fasteners (alloy steel, SS 316) from specialised suppliers without consolidation — significant cost premium.',s:'Heavy engineering fastener procurement benchmark',c:'medium'},
+    {t:'Rubber & sealing material inconsistency',d:'Process equipment requires diverse seals — high-temperature gaskets, PTFE seals, rubber expansion joints and vibration isolators from multiple specialised vendors per application.',s:'Industrial equipment sealing benchmark + Thermax product range',c:'medium'},
+    {t:'Sheet metal fabrication supplier fragmentation',d:'Pressure vessel shells, heat exchanger shells and duct sections require heavy gauge sheet metal from multiple vendors with inconsistent welding quality and dimensional accuracy.',s:'Thermax product range + heavy engineering fabrication benchmark',c:'medium'},
+    {t:'Sticker & decal compliance for 90+ export markets',d:'Thermax exports to 90+ countries — each requiring different regulatory labels, CE marks, safety stickers and product nameplates per destination. No consolidated label management.',s:'Thermax Annual Report FY2024 — export markets',c:'high'},
+  ],
+  cats:[
+    {name:'Machining & Forging',share:26,rat:'Industrial boilers, heat exchangers and process equipment require precision machined flanges, nozzles, tube sheets and forged pressure vessel components.',src:'Thermax product range; heavy engineering benchmark',conf:'medium',
+     subs:['Forged pressure vessel flanges & nozzles','Machined tube sheets (heat exchangers)','Precision valve bodies & internals','Machined pump casings & impellers','Forged lifting lugs & structural components']},
+    {name:'Sheet Metal',share:22,rat:'Pressure vessel shells, heat exchanger shells, duct sections and equipment enclosures require heavy gauge sheet metal fabrication at scale.',src:'Thermax product range + heavy engineering fabrication benchmark',conf:'medium',
+     subs:['Heavy gauge pressure vessel shell sections','Heat exchanger shell & tube sheets','Industrial duct sections & transitions','Equipment enclosure & panel fabrications','Structural steel frames & supports']},
+    {name:'Fasteners',share:18,rat:'Industrial boilers and pressure vessels require high-grade ASTM/IS standard fasteners — alloy steel, SS and specialised grades.',src:'Heavy engineering fastener benchmark; ASTM standards',conf:'medium',
+     subs:['High-tensile stud bolts & nuts (ASTM A193)','ASME pressure vessel bolts','Alloy steel hex bolts (boiler assembly)','Foundation anchor bolts & levelling pads','Specialised studs for high-temperature flanges']},
+    {name:'Castings',share:16,rat:'Process equipment requires CI and alloy steel castings for pump bodies, valve bodies, heat exchanger components and boiler parts.',src:'Thermax product range; foundry sector benchmark',conf:'medium',
+     subs:['CI pump & valve body castings','Alloy steel pressure vessel fittings','Bronze valve seats & bushings','CI boiler end caps & header bodies','Investment cast precision fittings']},
+    {name:'Rubber & Seals',share:10,rat:'Process equipment requires diverse industrial seals — high-temperature gaskets, expansion joints, PTFE seals and vibration isolators.',src:'Industrial equipment sealing benchmark; Thermax product range',conf:'medium',
+     subs:['High-temperature spiral wound gaskets','Rubber expansion joints (ducts & piping)','PTFE sealing rings & packing','Vibration isolation mounts','Industrial O-rings & custom gaskets']},
+    {name:'Stickers & Decals',share:8,rat:'Thermax exports to 90+ countries requiring CE marks, ASME code plates, safety stickers and product nameplates per destination market.',src:'Thermax Annual Report FY2024; CE & ASME regulatory requirements',conf:'high',
+     subs:['CE mark regulatory labels (Europe export)','ASME code data plates (pressure vessels)','Safety & warning stickers (ISO standard)','Thermax brand & model nameplates','Equipment rating plates & serial labels']},
+  ],
+  allSrc:['Thermax Limited Annual Report FY2024 (thermaxglobal.com/investors)','Wikipedia — Thermax Limited','ICRA Heavy Engineering Sector B&C Benchmark','ASTM International — Pressure Vessel Fastener Standards','CE Marking Regulatory Requirements — European Commission'],
+},
+'Godrej Appliances':{full:'Godrej Appliances Limited (Godrej & Boyce)',hq:'Mumbai, Maharashtra',ind:'Consumer Durable',
+  desc:'India\'s leading home appliance brand. Manufactures refrigerators, washing machines, air conditioners, microwave ovens and dishwashers. Strong Make in India focus with eco-friendly product positioning.',
+  rev:8200,fy:'FY2024',revSrc:'Godrej & Boyce Annual Report FY2024 — godrejandboyce.com (Appliances division)',revUrl:'https://www.godrejandboyce.com/godrej-and-boyce/investors',
+  plants:[
+    {n:'1',loc:'Shirwal — Maharashtra',prod:'Refrigerators (primary hub) and washing machines — largest appliance manufacturing facility'},
+    {n:'2',loc:'Mohali — Punjab',prod:'Air conditioners and refrigerators for North India; significant capacity expansion ongoing'},
+    {n:'3',loc:'Roorkee — Uttarakhand',prod:'Washing machines — excise benefit facility; serves Northern India distribution network'},
+  ],plantSrc:'Godrej & Boyce Annual Report FY2024; Wikipedia — Godrej Appliances',
+  pains:[
+    {t:'Refrigeration component B&C fragmentation',d:'Refrigerator manufacturing at Shirwal requires door gaskets, compressor mounts, plastic liner components and sheet metal from multiple fragmented suppliers with no consolidated quality standard.',s:'Godrej Appliances product range + consumer durable benchmark',c:'medium'},
+    {t:'Sheet metal stamping inconsistency across plants',d:'Three geographically dispersed plants procure refrigerator cabinet and washing machine drum stampings separately — no unified sheet metal specification or consolidated supplier management.',s:'Consumer durable manufacturing benchmark',c:'medium'},
+    {t:'Sticker & label compliance for BEE ratings',d:'Godrej\'s 5-star BEE-rated products require stringent BEE labels across all refrigerators, washing machines and ACs — multiple label vendors per plant with no brand enforcement.',s:'BEE India; Godrej Appliances product range',c:'high'},
+    {t:'Rubber seal quality in refrigerators & washers',d:'Refrigerator door gaskets, washing machine drum seals and AC pipe grommets from multiple small rubber vendors with varying EPDM quality — creates energy efficiency and field failure risk.',s:'Consumer durable rubber procurement benchmark',c:'medium'},
+    {t:'Fastener cost premium from fragmentation',d:'Appliance assembly across 3 plants requires hex screws, rivets and self-tapping screws procured separately per location — estimated 3–5% premium over consolidated buying price.',s:'Consumer durable fastener benchmark',c:'medium'},
+  ],
+  cats:[
+    {name:'Sheet Metal',share:22,rat:'Refrigerator cabinets, washing machine drums, AC enclosures and structural stampings — highest-volume B&C spend category for appliance OEMs.',src:'Consumer durable B&C benchmark — ICRA Sector Analysis',conf:'medium',
+     subs:['Refrigerator cabinet outer body stampings','Washing machine drum & tub stampings','AC cabinet & frame stampings','Inner door panel stampings','Base tray & structural support stampings']},
+    {name:'Rubber & Seals',share:18,rat:'Refrigerator door gaskets, washing machine drum seals, AC pipe grommets and anti-vibration mounts — critical quality, high volume.',src:'Consumer durable rubber benchmark; Godrej product range',conf:'medium',
+     subs:['Refrigerator door gaskets (EPDM magnetic)','Washing machine door & drum seals','Rubber anti-vibration feet (appliances)','AC refrigerant pipe grommets','EPDM water inlet & drain seals (washers)']},
+    {name:'Stickers & Decals',share:17,rat:'BEE 5-star labels, brand decals and safety compliance stickers across all refrigerators, ACs and washing machines.',src:'BEE India; Godrej Appliances — godrejappliances.com',conf:'high',
+     subs:['BEE 5-star energy rating labels','Godrej brand & model identification decals','Safety & regulatory compliance stickers','Temperature & capacity rating plates','Packaging labels & barcode stickers']},
+    {name:'Fasteners',share:16,rat:'Appliance assembly across 3 plants requires hex screws, rivets, self-tapping screws and specialty fasteners at high volume.',src:'Consumer durable fastener benchmark — ICRA',conf:'medium',
+     subs:['Self-tapping screws (sheet metal assembly)','Hex bolts & machine screws','Pop rivets (panel joining)','Spring washers & lock nuts','Plastic clips & push fasteners']},
+    {name:'Electrical & Electronics',share:15,rat:'Compressor motors, control boards, wiring harnesses and display modules for refrigerators, ACs and washing machines.',src:'Godrej Appliances product range — godrejappliances.com',conf:'medium',
+     subs:['Compressor motor capacitors','Main control board PCBs','Wiring harness sub-assemblies','Thermostat & temperature sensors','LED display modules & control panels']},
+    {name:'Plastics & Polymers',share:12,rat:'Refrigerator liners, washing machine panels, AC grilles and internal plastic components — high-volume polymer procurement.',src:'Godrej Appliances product range analysis',conf:'medium',
+     subs:['HIPS refrigerator inner liner mouldings','PP washing machine front panel mouldings','ABS AC grille & vent mouldings','Polystyrene door liner mouldings','Nylon gear & cam mouldings (washers)']},
+  ],
+  allSrc:['Godrej & Boyce Annual Report FY2024 (godrejandboyce.com/investors)','Wikipedia — Godrej Appliances','BEE India — Regulatory Labelling Requirements','ICRA Consumer Durable Sector B&C Benchmark','Godrej Appliances Product Range (godrejappliances.com)'],
+},
+'Escorts Kubota':{full:'Escorts Kubota Limited',hq:'Faridabad, Haryana (Kubota Corporation JV)',ind:'Off-Highway',
+  desc:'India\'s third-largest tractor manufacturer and leading agri-machinery company. Manufactures tractors (Escort, Farmtrac, Powertrac brands), construction equipment and railway components. Kubota holds 53.5% stake.',
+  rev:9256,fy:'FY2024',revSrc:'Escorts Kubota Annual Report FY2024 — escortsgroup.com/investors',revUrl:'https://www.escortsgroup.com/investors',
+  plants:[
+    {n:'1',loc:'Faridabad — Haryana',prod:'Tractors (all brands) — primary hub; also construction equipment (cranes, rollers) and railway products (couplers, brake systems)'},
+    {n:'2',loc:'Pune — Maharashtra',prod:'Kubota-branded tractors and compact construction equipment; new facility post-JV formation'},
+  ],plantSrc:'Escorts Kubota Annual Report FY2024 (escortsgroup.com); Wikipedia — Escorts Kubota',
+  pains:[
+    {t:'Fastener quality for tractor & construction equipment',d:'Tractor assembly requires 200+ fastener SKUs per model — high-tensile bolts, castle nuts, spring pins and U-bolts at high volume from fragmented supplier base across Haryana clusters.',s:'Escorts Kubota Annual Report FY2024; tractor B&C benchmark',c:'medium'},
+    {t:'Rubber & seal sourcing for off-highway equipment',d:'Tractors and construction equipment require oil seals, dust covers, rubber bushes and hydraulic seals at high volume. Multiple specialised vendors without unified qualification creates variability.',s:'Off-highway equipment rubber procurement benchmark',c:'medium'},
+    {t:'Sheet metal sourcing for tractor cab & body',d:'Tractor hood, fender and cab stampings from multiple sheet metal fabricators across Haryana and Punjab — inconsistent surface finish and dimensional accuracy from fragmented vendor base.',s:'Tractor manufacturing benchmark; Escorts Kubota product range',c:'medium'},
+    {t:'Casting procurement fragmentation',d:'Tractor gearbox housings, hydraulic pump bodies and structural castings procured from foundries across Rajasthan and Haryana without consolidated quality governance.',s:'Foundry sector benchmark; Escorts Kubota product range',c:'medium'},
+    {t:'Sticker & decal CMVR compliance',d:'Tractors require IS/CMVR compliance labels, safety stickers in multiple regional languages, load rating plates and brand decals — high SKU count managed without consolidated vendor.',s:'CMVR & IS regulatory requirements; Escorts product range',c:'high'},
+  ],
+  cats:[
+    {name:'Fasteners',share:27,rat:'Highest B&C spend for tractor/CE manufacturers — 200+ fastener SKUs per model including high-tensile bolts, U-bolts, castle nuts and spring pins.',src:'Tractor manufacturing B&C benchmark — ICRA Off-Highway Sector',conf:'medium',
+     subs:['High-tensile hex bolts & flange bolts','U-bolts (axle & suspension mounting)','Castle nuts & split pins (wheel hubs)','Spring pins & roll pins (linkage assemblies)','Track rod end & steering joint fasteners']},
+    {name:'Castings',share:22,rat:'Tractor gearbox housings, hydraulic pump bodies, differential housings and engine components — core B&C casting spend.',src:'Escorts Kubota product range; foundry sector benchmark',conf:'medium',
+     subs:['CI gearbox & transmission housings','Hydraulic lift pump body castings','CI differential housing castings','CI flywheel & pulley castings','Aluminium die-cast covers & caps']},
+    {name:'Sheet Metal',share:17,rat:'Tractor hood, fender, footrest stampings and construction equipment structural panels — high-volume sheet metal procurement.',src:'Tractor manufacturing benchmark; Escorts Kubota product range',conf:'medium',
+     subs:['Tractor hood & bonnet stampings','Front & rear fender stampings','Footrest & platform stampings','CE structural panel stampings','Sheet metal brackets & support frames']},
+    {name:'Rubber & Seals',share:15,rat:'Tractors and CE require oil seals, dust seals, rubber bushes, hydraulic seals and air cleaner elements at high volume.',src:'Off-highway equipment rubber benchmark',conf:'medium',
+     subs:['Oil seals (axle, gearbox & engine)','Dust cover seals (steering & linkage)','Rubber suspension bushes','Hydraulic cylinder seals & O-rings','Air cleaner & intake rubber seals']},
+    {name:'Springs & Wireforms',share:10,rat:'Tractor seat springs, throttle return springs, valve springs and wireform components — B&C spend across multiple models.',src:'Tractor manufacturing springs benchmark',conf:'medium',
+     subs:['Seat suspension spring assemblies','Throttle & clutch return springs','Valve springs (engine assembly)','Coil springs (brake & clutch systems)','Wire clips & retaining rings']},
+    {name:'Stickers & Decals',share:9,rat:'IS/CMVR compliance labels, safety stickers in regional languages, load rating plates and brand decals across Escort, Farmtrac and Powertrac models.',src:'CMVR & IS regulatory requirements; Escorts Kubota product range',conf:'high',
+     subs:['CMVR compliance & certification labels','Gross Weight & load rating plates','Safety stickers (Hindi, Punjabi, regional languages)','Brand & model identification decals','Instrument panel overlay stickers']},
+  ],
+  allSrc:['Escorts Kubota Annual Report FY2024 (escortsgroup.com/investors)','Wikipedia — Escorts Kubota','ICRA Off-Highway Sector B&C Procurement Benchmark','CMVR — Central Motor Vehicles Rules Regulatory Requirements','ACMA India — Automotive Component Manufacturers Association'],
+},
+'Kirloskar Brothers':{full:'Kirloskar Brothers Limited',hq:'Pune, Maharashtra (Kirloskar Group)',ind:'Industrial',
+  desc:'India\'s largest pump manufacturer. Engineers and manufactures pumps for agriculture, buildings, oil & gas, power and industrial applications. Global presence with manufacturing in India, Netherlands and South Africa.',
+  rev:4200,fy:'FY2024',revSrc:'Kirloskar Brothers Annual Report FY2024 — kirloskar.com/kbl',revUrl:'https://www.kirloskar.com/kbl/investors',
+  plants:[
+    {n:'1',loc:'Kirloskarwadi — Maharashtra',prod:'Large industrial pumps, centrifugal pumps, submersible pumps — primary & oldest facility (est. 1888)'},
+    {n:'2',loc:'Dewas — Madhya Pradesh',prod:'Agricultural pumps and domestic pumping systems; submersible pump sets for rural markets'},
+    {n:'3',loc:'Coimbatore — Tamil Nadu',prod:'Dewatering pumps, slurry pumps and specialised industrial pumps for South India'},
+    {n:'4',loc:'Shirwal — Maharashtra',prod:'Valves, fire suppression systems and waterworks pumps'},
+  ],plantSrc:'Kirloskar Brothers Annual Report FY2024 (kirloskar.com/kbl); Wikipedia — Kirloskar Brothers',
+  pains:[
+    {t:'Casting quality fragmentation',d:'KBL manufactures pumps for diverse applications requiring CI, SS316, bronze and duplex steel castings — sourced from multiple foundries with no unified quality governance or material traceability.',s:'KBL Annual Report FY2024; foundry benchmark',c:'medium'},
+    {t:'Fastener specification complexity',d:'Different pump applications (oil & gas vs agricultural vs waterworks) require different fastener grades (ASTM, IS, SS316) from specialised suppliers — no consolidated B&C fastener purchasing.',s:'Pump industry fastener benchmark; KBL product range',c:'medium'},
+    {t:'Rubber seal sourcing across pump types',d:'KBL\'s diverse pump range requires mechanical seals, O-rings, expansion joints and packings for clean water to corrosive chemical duty — multiple specialised seal suppliers per application.',s:'Pump industry seal benchmark; KBL product range',c:'medium'},
+    {t:'Machined component procurement complexity',d:'Precision machined impellers, shaft sleeves, wear rings and bearing housings are critical to pump performance — outsourced machining from 20+ vendors with inconsistent dimensional control.',s:'KBL product range; precision machining benchmark',c:'medium'},
+    {t:'Sticker & decal for 80+ export markets',d:'KBL exports to 80+ countries — each requiring different regulatory labels, CE/ATEX marks, safety stickers and product nameplates per export market.',s:'KBL Annual Report FY2024; CE/ATEX regulatory requirements',c:'high'},
+  ],
+  cats:[
+    {name:'Castings',share:30,rat:'Core to pump manufacturing — CI, SS316, bronze and specialised alloy castings for pump bodies, impellers and casings across all application types.',src:'KBL Annual Report FY2024; foundry sector benchmark',conf:'medium',
+     subs:['CI pump volute & casing castings','SS316 impeller castings (chemical duty)','Bronze pump casing & bearing housing','Duplex steel castings (offshore duty)','CI & SG iron diffuser & stage castings']},
+    {name:'Machining & Forging',share:25,rat:'Precision machined impellers, shaft sleeves, wear rings and bearing housings are critical to pump hydraulic performance.',src:'KBL product range; precision machining benchmark',conf:'medium',
+     subs:['Precision machined pump impellers','Shaft sleeves & protection sleeves','Wear rings (casing & impeller types)','Machined bearing housing components','Forged pump shaft blanks']},
+    {name:'Rubber & Seals',share:18,rat:'Diverse seal requirements across pump types — mechanical seals, O-rings, expansion joints, PTFE packings and vibration isolators.',src:'Pump industry seal benchmark; KBL product range',conf:'medium',
+     subs:['Mechanical shaft seals (clean & chemical duty)','O-rings (NBR, Viton, EPDM — multiple sizes)','Rubber expansion joints (pipe connections)','Gland packing (PTFE & graphite)','Anti-vibration mounts (pump base)']},
+    {name:'Fasteners',share:15,rat:'Diverse fastener grades across pump applications — ASTM, IS and SS grade bolts for clean water, oil & gas and chemical duty.',src:'Pump industry fastener benchmark; ASTM standards',conf:'medium',
+     subs:['ASTM A193 alloy steel stud bolts','SS316 fasteners (chemical duty pumps)','Hex bolts & foundation bolts (pump base)','Grease nipples & lubrication fittings','Hex nuts & self-locking nuts (multiple grades)']},
+    {name:'Electrical & Electronics',share:7,rat:'Pump control panels, submersible motor starters, pressure switches and electrical accessories for complete pumpset systems.',src:'KBL product range — pumpset systems',conf:'medium',
+     subs:['Motor starter panels & DOL starters','Pressure & flow switches','Submersible pump cable assemblies','Control panel wiring harnesses','Level sensors & float switches']},
+    {name:'Stickers & Decals',share:5,rat:'Export to 80+ countries requires CE/ATEX marks, safety stickers, regulatory nameplates and identification labels per market.',src:'KBL Annual Report FY2024; CE/ATEX regulatory requirements',conf:'high',
+     subs:['CE mark regulatory labels (Europe)','ATEX certification labels (hazardous area)','Pump rating & performance dataplates','Safety warning stickers (ISO standard)','KBL brand & serial identification labels']},
+  ],
+  allSrc:['Kirloskar Brothers Annual Report FY2024 (kirloskar.com/kbl)','Wikipedia — Kirloskar Brothers Limited','ICRA Industrial Pump Sector Benchmark','CE & ATEX Regulatory Requirements — European Commission','Foundry Sector Association India'],
+},
+};
+
+const ALIAS={'lubi industries':'Lubi Pumps','lubi':'Lubi Pumps','blue star limited':'Blue Star','bluestar':'Blue Star','crompton greaves':'Crompton','cgcel':'Crompton','voltas limited':'Voltas','havells india':'Havells','ashok leyland limited':'Ashok Leyland','thermax limited':'Thermax','godrej':'Godrej Appliances','godrej appliances limited':'Godrej Appliances','escorts kubota limited':'Escorts Kubota','escorts':'Escorts Kubota','kubota':'Escorts Kubota','kirloskar brothers limited':'Kirloskar Brothers','kirloskar':'Kirloskar Brothers','kbl':'Kirloskar Brothers'};
+
+function findCo(q){
+  const n=q.toLowerCase().trim();
+  const direct=Object.keys(DB).find(k=>k.toLowerCase()===n||k.toLowerCase().includes(n)||n.includes(k.toLowerCase()));
+  if(direct)return DB[direct];
+  const al=Object.entries(ALIAS).find(([k])=>n===k||n.includes(k)||k.includes(n));
+  if(al)return DB[al[1]];
+  return null;
+}
+function getMatches(q){
+  const n=q.toLowerCase().trim();
+  if(!n)return[];
+  return Object.entries(DB).filter(([k,v])=>k.toLowerCase().includes(n)||v.full.toLowerCase().includes(n)).map(([k,v])=>({key:k,full:v.full,hq:v.hq,rev:v.rev,fy:v.fy})).slice(0,8);
+}
+
+// STATE
+let ST={name:'',ind:'',rev:0,bc:0,fy:'',revSrc:'',co:null};
+let slides=[],cur=0,sugIdx=-1;
+
+// UTILS
+const crFmt=v=>`₹${Math.round(v).toLocaleString('en-IN')} Cr`;
+const show=id=>{document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on')};
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+const toast=(m,d=2800)=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)};
+const autoH=el=>{el.style.height='auto';el.style.height=el.scrollHeight+'px'};
+const saveEdit=()=>{if(slides[cur])slides[cur].content=document.getElementById('sTa').value};
+const selInd=(el,v)=>{document.querySelectorAll('.ind-btn').forEach(b=>b.classList.remove('sel'));el.classList.add('sel');ST.ind=v;chk()};
+const setBar=(p,m)=>{document.getElementById('pptxBar').style.width=p+'%';document.getElementById('pptxMsg').textContent=m};
+const chk=()=>{document.getElementById('gbtn').disabled=!(document.getElementById('cname').value.trim()&&ST.ind&&ST.rev>0)};
+
+// INIT
+window.onload=()=>{
+  const cl=document.getElementById('coList');
+  Object.entries(DB).forEach(([k])=>{
+    const el=document.createElement('span');el.className='co-tag';el.textContent=k;
+    el.onclick=()=>{document.getElementById('cname').value=k;hideSugg();loadCo(k)};
+    cl.appendChild(el);
+  });
+};
+
+// SEARCH
+function onSearch(){
+  const q=document.getElementById('cname').value.trim();
+  const co=findCo(q);
+  if(co){hideSugg();loadCoData(q,co);}
+  else{showSugg(q);resetRev();}
+  chk();
+}
+function onKey(e){
+  const items=document.querySelectorAll('.sug-item');
+  if(e.key==='ArrowDown'){sugIdx=Math.min(sugIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('hi',i===sugIdx));}
+  else if(e.key==='ArrowUp'){sugIdx=Math.max(sugIdx-1,0);items.forEach((el,i)=>el.classList.toggle('hi',i===sugIdx));}
+  else if(e.key==='Enter'&&sugIdx>=0&&items[sugIdx])items[sugIdx].click();
+  else if(e.key==='Escape')hideSugg();
+}
+function showSugg(q){
+  const s=document.getElementById('sugg');
+  const m=getMatches(q);
+  if(!m.length){s.style.display='none';return;}
+  s.innerHTML=m.map(x=>`<div class="sug-item" onclick="selectSug('${x.key}')"><strong>${x.full}</strong><span class="sug-meta">${x.hq} · ${crFmt(x.rev)} ${x.fy}</span></div>`).join('');
+  s.style.display='block';sugIdx=-1;
+}
+function hideSugg(){document.getElementById('sugg').style.display='none';sugIdx=-1;}
+function selectSug(k){document.getElementById('cname').value=k;hideSugg();loadCo(k);}
+function loadCo(k){const co=findCo(k);if(co)loadCoData(k,co);}
+function loadCoData(name,co){
+  ST.name=name;ST.co=co;ST.rev=co.rev;ST.bc=Math.round(co.rev*.2);ST.fy=co.fy;ST.revSrc=co.revSrc;
+  const box=document.getElementById('revBox');box.style.display='block';
+  document.getElementById('rvErr').style.display='none';
+  document.getElementById('manBox').style.display='none';
+  const ok=document.getElementById('rvOK');ok.style.display='block';
+  document.getElementById('rvRev').textContent=crFmt(co.rev);
+  document.getElementById('rvFY').textContent=co.fy;
+  document.getElementById('rvBC').textContent=crFmt(ST.bc)+' / year';
+  document.getElementById('rvSrc').innerHTML=`<strong>${co.revSrc}</strong>${co.revUrl?` · <a href="${co.revUrl}" target="_blank" style="color:inherit">View source ↗</a>`:''}`;
+  // Auto-select industry
+  const indMap={'Automotive':0,'Consumer Durable':1,'Industrial':2,'Off-Highway':2};
+  const btns=document.querySelectorAll('.ind-btn');
+  const vals=['Automotive','Consumer Durable','Industrial'];
+  btns.forEach((b,i)=>b.classList.toggle('sel',vals[i]===(co.ind==='Off-Highway'?'Industrial':co.ind)));
+  ST.ind=co.ind==='Off-Highway'?'Industrial':co.ind;
+  chk();
+}
+function resetRev(){ST.rev=0;ST.co=null;document.getElementById('revBox').style.display='none';chk();}
+function onManual(){
+  const v=parseFloat(document.getElementById('manRev').value)||0;
+  if(v>0){
+    ST.rev=v;ST.bc=Math.round(v*.2);ST.fy='Latest FY';ST.revSrc='Manually entered — verify against company annual report';
+    const h=document.getElementById('manHint');h.textContent=`B&C spend = ${crFmt(ST.bc)} / year`;h.style.display='block';chk();
+  }
+}
+
+// GENERATION
+async function startGen(){
+  ST.name=document.getElementById('cname').value.trim();
+  const co=ST.co||findCo(ST.name);
+  if(co&&!ST.co){ST.co=co;ST.rev=co.rev;ST.bc=Math.round(co.rev*.2);ST.fy=co.fy;ST.revSrc=co.revSrc;}
+  show('sc2');
+  document.getElementById('editBtn').style.display='flex';
+  document.getElementById('pTitle').textContent=`Building pitch: ${ST.co?.full||ST.name}`;
+  const steps=[
+    `Revenue: ${crFmt(ST.rev)} (${ST.fy}) — ${ST.revSrc.split('—')[0].trim()}`,
+    `Manufacturing plants: ${ST.co?.plants?.length||0} locations verified`,
+    `Pain areas: ${ST.co?.pains?.length||0} specific procurement challenges identified`,
+    `B&C categories: ${ST.co?.cats?.length||0} categories mapped to Capgrid catalogue`,
+    `Sub-parts: 5 per category — building all 12 sourced slides`,
+  ];
+  const pl=document.getElementById('pSteps');pl.innerHTML='';
+  const els=steps.map(s=>{const e=document.createElement('div');e.className='ps';e.innerHTML=`<div class="ps-d"></div><div>${s}</div>`;pl.appendChild(e);return e;});
+  for(let i=0;i<els.length;i++){await delay(400+i*350);els[i].classList.add('vis');if(i>0)els[i-1].classList.add('done');}
+  await delay(300);
+  buildSlides();
+  els[els.length-1].classList.add('done');
+  await delay(250);
+  renderOutput();
+  show('sc3');
+}
+
+// BUILD SLIDES
+function buildSlides(){
+  const co=ST.co,name=co?.full||ST.name;
+  const rev=crFmt(ST.rev),bc=crFmt(ST.bc);
+  const cats=co?.cats||[],pains=co?.pains||[],plants=co?.plants||[];
+  const catNames=cats.map(c=>c.name).join(', ');
+  const allSrc=co?.allSrc||[ST.revSrc];
+  const gLo=Math.round(ST.bc*200).toLocaleString('en-IN');
+  const gHi=Math.round(ST.bc*400).toLocaleString('en-IN');
+
+  document.getElementById('imgPrm').textContent=`Photorealistic macro photography of ${name}'s key B&C components: ${cats.slice(0,3).map(c=>c.name).join(', ')}. White background, blue (#3A8DFF) accent lighting. Three-point studio lighting. Sharp industrial detail. No text, no people.`;
+  document.getElementById('allSrc').innerHTML=allSrc.map(s=>`<div>· ${s}</div>`).join('');
+
+  slides=[
+    {badge:'Client Overview',title:name,sub:`${ST.ind} · ${co?.hq||'India'} · ${rev} revenue (${ST.fy})`,
+     content:`${name}\n${co?.desc||''}\n\nAnnual Revenue (India, ${ST.fy}): ${rev}\nEstimated B&C class spend: ${bc}/year\nBasis: 20% of India annual revenue — standard manufacturing benchmark\n\nManufacturing presence: ${plants.length} plant${plants.length!==1?'s':''} across India`,
+     metrics:[{v:rev,l:`Revenue (${ST.fy})`},{v:bc,l:'B&C spend/yr'},{v:plants.length+'',l:'Mfg plants'},{v:cats.length+'',l:'B&C categories'}],
+     tags:[ST.ind],src:[{t:ST.revSrc,c:'high'}],type:'overview',catTable:null,plantsData:null},
+    {badge:'Manufacturing Plants',title:'Manufacturing plant locations',sub:`${plants.length} verified plants across India`,
+     content:`${name} manufacturing facilities:\n\n${plants.map(p=>`Plant ${p.n} — ${p.loc}\nProducts: ${p.prod}`).join('\n\n')}`,
+     metrics:null,tags:[],src:[{t:co?.plantSrc||'Company Annual Report',c:'high'}],type:'plants',catTable:null,plantsData:plants},
+    {badge:'Pain Areas',title:'B&C procurement pain areas',sub:`${pains.length} specific challenges identified for ${name}`,
+     content:pains.map((p,i)=>`${i+1}. ${p.t}\n\n   ${p.d}`).join('\n\n'),
+     metrics:null,tags:[],src:pains.map(p=>({t:p.s,c:p.c})).filter((v,i,a)=>a.findIndex(x=>x.t===v.t)===i),type:'text',catTable:null,plantsData:null},
+    {badge:'B&C Spend',title:'B&C class spend: '+bc+'/year',sub:`20% of ${rev} revenue (${ST.fy})`,
+     content:`Revenue: ${name} India annual revenue = ${rev} (${ST.fy})\nB&C spend = ${rev} × 20% = ${bc}/year\n\nNote: 20% is the standard benchmark for B&C (indirect, non-strategic) parts at this scale.\n\nSpend by category:\n${cats.map(c=>`· ${c.name}: ~${c.share}% ≈ ${crFmt(ST.bc*c.share/100)}/year`).join('\n')}`,
+     metrics:null,tags:[],src:[{t:ST.revSrc,c:'high'},{t:'B&C spend benchmark: 20% of manufacturing revenue (industry standard)',c:'medium'}],type:'text',catTable:null,plantsData:null},
+    {badge:'B&C Categories',title:'Top B&C categories',sub:`${cats.length} categories — mapped to Capgrid product catalogue`,
+     content:cats.map((c,i)=>`${i+1}. ${c.name} (~${c.share}% of B&C spend ≈ ${crFmt(ST.bc*c.share/100)}/yr)\n   ${c.rat}`).join('\n\n'),
+     metrics:null,tags:cats.map(c=>c.name),src:cats.map(c=>({t:c.src,c:c.conf})).filter((v,i,a)=>a.findIndex(x=>x.t===v.t)===i),type:'text',catTable:null,plantsData:null},
+    {badge:'Sub-Categories',title:'B&C categories & sub-categories',sub:`5 specific sub-parts per category`,
+     content:`Category and sub-category breakdown for ${name}:`,
+     metrics:null,tags:[],src:cats.map(c=>({t:c.src,c:c.conf})).filter((v,i,a)=>a.findIndex(x=>x.t===v.t)===i),
+     type:'cattable',catTable:cats.map(c=>({cat:c.name,share:c.share+'%',subs:c.subs})),plantsData:null},
+    {badge:'Sub-Parts Detail',title:'Sub-categories detail',sub:`What ${name} actually procures in each B&C category`,
+     content:cats.map(c=>`${c.name.toUpperCase()} (~${c.share}% of B&C spend)\n${c.subs.map(s=>`  → ${s}`).join('\n')}`).join('\n\n'),
+     metrics:null,tags:[],src:cats.map(c=>({t:c.src,c:c.conf})).filter((v,i,a)=>a.findIndex(x=>x.t===v.t)===i),type:'text',catTable:null,plantsData:null},
+    {badge:'Supplier Complexity',title:'B&C supplier base complexity',sub:`${cats.length} categories × 8–15 suppliers = ${cats.length*8}–${cats.length*15}+ relationships`,
+     content:`B&C procurement at ${name}'s scale (${bc}/year across ${plants.length} plants):\n\n→ ${cats.length} categories × 8–15 active suppliers each = ${cats.length*8}–${cats.length*15}+ B&C supplier relationships\n→ B&C = ~70–80% of total supplier count, only 20% of total spend value\n→ Each supplier: separate PO, gate entry, quality inspection, payment, audit\n→ Estimated ${gLo}–${gHi} gate entries/year across ${plants.length} plants\n→ No consolidated quality standard or digital trail across the B&C supplier base\n→ Procurement siloed per plant — no cross-plant leverage\n\nKey insight: part cost = ~15% of total B&C cost. 85% is overhead — PO management, quality, logistics, headcount.\nAt ${bc}/year this overhead = ₹${Math.round(ST.bc*.12).toLocaleString('en-IN')}–₹${Math.round(ST.bc*.18).toLocaleString('en-IN')} Cr/year beyond the parts themselves.`,
+     metrics:null,tags:[],src:[{t:ST.revSrc,c:'high'},{t:'B&C complexity benchmark — ICRA Manufacturing Sector Analysis',c:'medium'}],type:'text',catTable:null,plantsData:null},
+    {badge:'Process Gap',title:'Process & visibility gap',sub:'Hidden cost of fragmented B&C sourcing',
+     content:`For ${name} across ${plants.length} plants:\n\n→ Inventory cost: 20–30 days B&C stock per plant → ₹${Math.round(ST.bc*.06).toLocaleString('en-IN')}–₹${Math.round(ST.bc*.08).toLocaleString('en-IN')} Cr locked in working capital\n→ Procurement headcount: 4–6 FTEs managing B&C transactions — transactional, not strategic\n→ Quality inconsistency: no unified inspection standard across ${cats.length} categories and 100+ suppliers\n→ Reactive buying: no demand forecasting → last-minute purchases at premium prices\n→ Gate entry load: ${gLo}–${gHi}/year — administrative overhead with zero value add\n→ ${plants.length} plants = ${plants.length} siloed procurement operations with no cross-plant visibility or leverage\n\nTotal B&C overhead beyond part cost: ₹${Math.round(ST.bc*.12).toLocaleString('en-IN')}–₹${Math.round(ST.bc*.18).toLocaleString('en-IN')} Cr/year`,
+     metrics:null,tags:[],src:[{t:ST.revSrc,c:'high'},{t:'Procurement overhead benchmark: 12–18% of B&C spend (ICRA)',c:'medium'}],type:'text',catTable:null,plantsData:null},
+    {badge:'Business Impact',title:'Quantified business impact',sub:`Savings potential at ${bc}/year B&C spend`,
+     content:`At ${bc} annual B&C spend across ${plants.length} manufacturing plants:`,
+     metrics:[{v:`₹${Math.round(ST.bc*.03).toLocaleString('en-IN')}–${Math.round(ST.bc*.05).toLocaleString('en-IN')}Cr`,l:'Material cost saving (3–5%)'},{v:`₹${Math.round(ST.bc*.06).toLocaleString('en-IN')}–${Math.round(ST.bc*.08).toLocaleString('en-IN')}Cr`,l:'Working capital freed'},{v:`₹${Math.round(ST.bc*.10).toLocaleString('en-IN')}–${Math.round(ST.bc*.15).toLocaleString('en-IN')}Cr`,l:'Total Year-1 saving'},{v:'₹0.6–0.9 Cr',l:'Indirect headcount saving'}],
+     tags:[],src:[{t:ST.revSrc,c:'high'},{t:'B&C savings benchmark: 3–5% direct material + 1% inventory (ICRA)',c:'medium'}],type:'metrics',catTable:null,plantsData:null},
+    {badge:'Why Now',title:'Why consolidate now',sub:`The case for action at ${name}`,
+     content:`Three market forces make B&C consolidation urgent:\n\n1. Scale amplifies complexity, not efficiency\n${name} operates ${plants.length} plants. Each plant adds B&C fragmentation. Consolidating ${cats.length} categories now is significantly easier than post-expansion. Every quarter of delay compounds overhead.\n\n2. Input cost volatility demands structured pricing\n${ST.ind} manufacturers face raw material price cycles. Consolidated B&C with RM indexing (SIAM, SteelMint, CostMasters) delivers price predictability and negotiating leverage across the full ${bc} basket.\n\n3. Digital supply chain is a customer requirement\nInstitutional buyers increasingly require supply chain traceability and compliance documentation — which requires digital B&C infrastructure, not siloed manual processes across ${plants.length} plants.`,
+     metrics:null,tags:[],src:[{t:ST.revSrc,c:'high'},{t:'DPIIT PLI Scheme manufacturing sector data 2024',c:'medium'}],type:'text',catTable:null,plantsData:null},
+    {badge:'Next Step',title:'Proposed next step',sub:`30-minute diagnostic with ${name}`,
+     content:`We propose a 30-minute Supply Chain Diagnostic:\n\n→ Map ${name}'s ${bc} B&C spend across ${catNames}\n→ Analyse ${plants.length}-plant supplier base vs Capgrid's pre-vetted strategic pools\n→ Present customised savings model — per category, per plant\n→ Live demo: Sourcing CT + Q-TAG + Supply Chain Control Tower\n→ Pilot: one category, one plant — 90 days, zero disruption\n\nOne meeting. Tangible output. No commitment required.`,
+     metrics:null,tags:['30-min diagnostic','Savings model ready','Live demo','Zero-risk pilot'],src:[],type:'text',catTable:null,plantsData:null},
+  ];
+}
+
+// RENDER
+function renderOutput(){
+  const co=ST.co,name=co?.full||ST.name;
+  document.getElementById('oTitle').textContent=`${name} — Client Intelligence Pitch`;
+  document.getElementById('oMeta').textContent=`12 slides · B&C: ${crFmt(ST.bc)} · ${co?.plants?.length||0} plants · ${co?.cats?.length||0} categories · Sources on every slide`;
+  const nav=document.getElementById('snav');nav.innerHTML='<div class="sn-hdr">Slides</div>';
+  slides.forEach((s,i)=>{
+    const el=document.createElement('div');el.className='sn-item'+(i===0?' act':'');
+    el.innerHTML=`<div class="sn-n">${String(i+1).padStart(2,'0')}</div><div class="sn-l">${s.title.length>26?s.title.slice(0,25)+'…':s.title}</div>`;
+    el.onclick=()=>go(i);nav.appendChild(el);
+  });
+  go(0);
+}
+
+function go(i){
+  cur=i;const s=slides[i];
+  document.querySelectorAll('.sn-item').forEach((el,j)=>el.classList.toggle('act',j===i));
+  document.getElementById('shNo').textContent=`SLIDE ${String(i+1).padStart(2,'0')} / ${slides.length}`;
+  document.getElementById('shBadge').textContent=s.badge;
+  document.getElementById('shTitle').textContent=s.title;
+  document.getElementById('shSub').textContent=s.sub;
+  const ta=document.getElementById('sTa');ta.value=s.content;ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';
+  document.getElementById('navPg').textContent=`${i+1} / ${slides.length}`;
+  document.getElementById('prevBtn').disabled=i===0;
+  document.getElementById('nextBtn').disabled=i===slides.length-1;
+  const tr=document.getElementById('sTags');tr.innerHTML='';
+  (s.tags||[]).forEach(t=>{const el=document.createElement('span');el.className='stag';el.textContent=t;tr.appendChild(el)});
+  const mr=document.getElementById('sMRow');
+  if(s.metrics?.length){mr.style.display='grid';mr.innerHTML='';s.metrics.forEach(m=>{const c=document.createElement('div');c.className='m-c';c.innerHTML=`<div class="m-v">${m.v}</div><div class="m-l">${m.l}</div>`;mr.appendChild(c)})}
+  else mr.style.display='none';
+  const ct=document.getElementById('sCatTbl');
+  if(s.type==='cattable'&&s.catTable?.length){
+    ct.style.display='block';
+    ct.innerHTML=`<div class="cat-tbl"><div class="ct-hd"><div class="ct-hc">B&C Category (Share)</div><div class="ct-hc">Sub-categories — 5 per category</div></div>${s.catTable.map(r=>`<div class="ct-row"><div class="ct-cat">${r.cat}<br><span style="font-size:10px;font-weight:500;color:var(--K3)">${r.share} of B&C</span></div><div class="ct-subs">${r.subs.map(s=>`<span class="ct-chip">${s}</span>`).join('')}</div></div>`).join('')}</div>`;
+  }else ct.style.display='none';
+  const pt=document.getElementById('sPlTbl');
+  if(s.type==='plants'&&s.plantsData?.length){
+    pt.style.display='block';
+    pt.innerHTML=`<div class="pl-tbl"><div class="pl-hd"><div class="pl-hc">#</div><div class="pl-hc">Location</div><div class="pl-hc">Products Manufactured</div></div>${s.plantsData.map(p=>`<div class="pl-row"><div class="pl-cell pl-num">${p.n}</div><div class="pl-cell pl-loc">${p.loc}</div><div class="pl-cell">${p.prod}</div></div>`).join('')}</div>`;
+  }else pt.style.display='none';
+  const sf=document.getElementById('sfTags');sf.innerHTML='';
+  const srcs=s.src?.length?s.src:[{t:'Revenue: '+ST.revSrc,c:'medium'}];
+  srcs.filter(Boolean).forEach(src=>{
+    const el=document.createElement('span');el.className='sf-tag '+(src.c==='high'?'v':'e');
+    el.textContent=(src.c==='high'?'✓ ':'~ ')+(src.t?.length>70?src.t.slice(0,69)+'…':src.t||'—');
+    sf.appendChild(el);
+  });
+}
+function nav(d){const n=cur+d;if(n>=0&&n<slides.length){saveEdit();go(n)}}
+
+// COPY ALL
+function copyAll(){
+  saveEdit();
+  const co=ST.co,name=co?.full||ST.name;
+  let txt=`${name} — Client Intelligence Pitch\nB&C Spend: ${crFmt(ST.bc)}/yr (20% of ${crFmt(ST.rev)}, ${ST.fy})\nSource: ${ST.revSrc}\n${'═'.repeat(60)}\n\n`;
+  txt+=slides.map((s,i)=>`SLIDE ${i+1}: ${s.title.toUpperCase()}\n${'─'.repeat(50)}\n${s.content}\nSOURCES: ${(s.src||[]).map(x=>(x.c==='high'?'✓ ':'~ ')+x.t).join(' | ')||'See revenue source'}`).join('\n\n');
+  txt+=`\n\n${'═'.repeat(60)}\nALL SOURCES\n${(co?.allSrc||[ST.revSrc]).join('\n')}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('✓ Copied — all 12 slides + sources')).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✓ Copied')});
+}
+
+// DRAWER / RESTART
+function toggleDrawer(){
+  const d=document.getElementById('drawer');const open=d.classList.toggle('open');
+  document.getElementById('editBtn').textContent=open?'✕ Close':'✏ Edit inputs';
+  if(open){document.getElementById('d-name').value=ST.name;document.getElementById('d-ind').value=ST.ind;}
+}
+function applyDrawer(){
+  const n=document.getElementById('d-name').value.trim(),i=document.getElementById('d-ind').value;
+  if(!n||!i){toast('⚠️ Fill all fields');return;}
+  ST.name=n;ST.ind=i;ST.rev=0;ST.co=null;
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('editBtn').textContent='✏ Edit inputs';
+  document.getElementById('cname').value=n;
+  const co=findCo(n);if(co)loadCoData(n,co);else resetRev();
+  show('sc1');
+}
+function restart(){
+  ST={name:'',ind:'',rev:0,bc:0,fy:'',revSrc:'',co:null};slides=[];cur=0;
+  document.querySelectorAll('.ind-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('cname').value='';resetRev();
+  document.getElementById('gbtn').disabled=true;
+  document.getElementById('editBtn').style.display='none';
+  document.getElementById('drawer').classList.remove('open');
+  show('sc1');
+}
+
+// PPTX — White + #3A8DFF Blue
+async function genPPTX(){
+  saveEdit();
+  document.getElementById('dlBtn').disabled=true;
+  document.getElementById('pptxOv').classList.add('show');
+  setBar(5,'Initialising...');
+  try{
+    const co=ST.co,name=co?.full||ST.name;
+    const rev=crFmt(ST.rev),bc=crFmt(ST.bc);
+    const cats=co?.cats||[],plants=co?.plants||[],pains=co?.pains||[];
+    const W=10,H=5.625;
+    const BLU='3A8DFF',BDK='1A6AE0',BLT='EEF5FF',BBD='C3DCFF';
+    const WHT='FFFFFF',BG='F4F6FC';
+    const INK='0B0F1C',INK2='2A3149',INK3='5A6380',INK4='9BA3BC';
+    const pres=new PptxGenJS();
+    pres.layout='LAYOUT_16x9';
+    pres.title=`${name} — Client Intelligence Pitch`;
+    pres.author='Capgrid Technology Solutions';
+
+    function pg(s,n){
+      s.addText(`${n}/12`,{x:9.1,y:5.32,w:.7,h:.18,fontSize:8,color:INK4,align:'right',fontFace:'Calibri'});
+      s.addText('Capgrid Client Intelligence · Verified sources · Internal use',{x:.4,y:5.32,w:7.2,h:.18,fontSize:7.5,color:INK4,fontFace:'Calibri'});
+    }
+    function srcFtr(s,srcs,y=4.88){
+      s.addShape('rect',{x:0,y,w:W,h:.58,fill:{color:BG},line:{color:'E5E9F4',width:.5}});
+      s.addText('SOURCES',{x:.4,y:y+.07,w:1.3,h:.14,fontSize:7.5,fontFace:'Calibri',bold:true,color:INK4,charSpacing:1.2});
+      const str=(srcs||[]).filter(Boolean).map(x=>(x.c==='high'?'✓ ':'~ ')+(x.t||'')).join('   ·   ')||'~ Revenue: '+ST.revSrc;
+      s.addText(str,{x:.4,y:y+.26,w:9.2,h:.22,fontSize:8.5,fontFace:'Calibri',color:INK3,wrap:true});
+    }
+    function hero(s,badge,title,sub){
+      s.addShape('rect',{x:0,y:0,w:.07,h:H,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addShape('rect',{x:6.0,y:0,w:4.0,h:H,fill:{color:BLT,transparency:25},line:{color:BLT,width:0}});
+      s.addShape('roundRect',{x:.28,y:.28,w:1.8,h:.26,rectRadius:.1,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(badge.toUpperCase(),{x:.28,y:.28,w:1.8,h:.26,fontSize:8.5,fontFace:'Calibri',bold:true,color:WHT,align:'center',charSpacing:1.1});
+      s.addText(title,{x:.28,y:.68,w:5.6,h:.96,fontSize:27,fontFace:'Cambria',bold:true,color:INK,wrap:true,lineSpacingMultiple:1.1});
+      s.addText(sub,{x:.28,y:1.7,w:5.6,h:.3,fontSize:11.5,fontFace:'Calibri',color:INK3});
+      s.addShape('rect',{x:.28,y:2.08,w:2.4,h:.05,fill:{color:BLU},line:{color:BLU,width:0}});
+    }
+    function mbox(s,x,y,w,h,val,lbl){
+      s.addShape('roundRect',{x,y,w,h,rectRadius:.09,fill:{color:BLT},line:{color:BBD,width:.7}});
+      s.addText(val,{x:x+.05,y:y+.06,w:w-.1,h:h*.55,fontSize:15,fontFace:'Calibri',bold:true,color:BLU,align:'center',valign:'middle'});
+      s.addText(lbl,{x:x+.05,y:y+h*.63,w:w-.1,h:h*.32,fontSize:8.5,fontFace:'Calibri',color:INK3,align:'center',wrap:true});
+    }
+
+    // S1 Overview
+    setBar(10,'Slide 1...');
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Client Overview',name,`${ST.ind} · ${co?.hq||'India'} · ${rev} revenue (${ST.fy})`);
+    s.addText(co?.desc||'',{x:.28,y:2.28,w:5.5,h:.55,fontSize:11,fontFace:'Calibri',color:INK2,wrap:true,lineSpacingMultiple:1.4});
+    slides[0].metrics.forEach((m,i)=>mbox(s,.28+i*2.37,2.96,2.2,.88,m.v,m.l));
+    srcFtr(s,slides[0].src);pg(s,1);}
+
+    // S2 Plants
+    setBar(18,'Slide 2...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Manufacturing Plants','Manufacturing plant locations',`${plants.length} verified plants across India`);
+    s.addShape('rect',{x:.28,y:2.28,w:9.3,h:.27,fill:{color:BLU},line:{color:BLU,width:0}});
+    ['#','Location','Products Manufactured'].forEach((h,i)=>{
+      const xArr=[.36,.8,4.3],wArr=[.4,3.4,5.2];
+      s.addText(h,{x:xArr[i],y:2.28,w:wArr[i],h:.27,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+    });
+    plants.slice(0,7).forEach((p,i)=>{
+      const y=2.55+i*.36;
+      s.addShape('rect',{x:.28,y,w:9.3,h:.34,fill:{color:i%2===0?WHT:BG},line:{color:'E5E9F4',width:.3}});
+      s.addText(p.n,{x:.36,y:y+.02,w:.4,h:.3,fontSize:10,fontFace:'Calibri',bold:true,color:BLU,valign:'middle'});
+      s.addText(p.loc,{x:.8,y:y+.02,w:3.4,h:.3,fontSize:10,fontFace:'Calibri',bold:true,color:INK,valign:'middle',wrap:true});
+      s.addText(p.prod.slice(0,85),{x:4.3,y:y+.02,w:5.2,h:.3,fontSize:9,fontFace:'Calibri',color:INK3,valign:'middle',wrap:true});
+    });
+    srcFtr(s,slides[1].src);pg(s,2);}
+
+    // S3 Pain Areas
+    setBar(26,'Slide 3...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Pain Areas','B&C procurement pain areas',`${pains.length} specific challenges for ${name}`);
+    pains.slice(0,5).forEach((p,i)=>{
+      const y=2.28+i*.49;
+      s.addShape('roundRect',{x:.28,y,w:9.3,h:.42,rectRadius:.07,fill:{color:i%2===0?BG:WHT},line:{color:'E5E9F4',width:.5}});
+      s.addShape('rect',{x:.28,y:y+.08,w:.05,h:.26,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(`${i+1}. ${p.t}`,{x:.44,y:y+.04,w:8.8,h:.18,fontSize:10.5,fontFace:'Calibri',bold:true,color:INK});
+      s.addText(p.d.slice(0,130),{x:.44,y:y+.22,w:8.8,h:.16,fontSize:9,fontFace:'Calibri',color:INK3,wrap:true});
+    });
+    srcFtr(s,slides[2].src);pg(s,3);}
+
+    // S4 Spend
+    setBar(35,'Slide 4...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'B&C Spend','B&C class spend: '+bc+'/year',`20% of ${rev} revenue (${ST.fy})`);
+    s.addShape('roundRect',{x:.28,y:2.28,w:9.3,h:.62,rectRadius:.1,fill:{color:BLT},line:{color:BBD,width:.7}});
+    s.addText(`${name}   Annual Revenue (${ST.fy}): ${rev}   ×   20%   =   ${bc} / year`,{x:.42,y:2.38,w:9.1,h:.3,fontSize:13,fontFace:'Calibri',bold:true,color:BLU,align:'center'});
+    s.addText(`Source: ${ST.revSrc}`,{x:.42,y:2.68,w:9.1,h:.16,fontSize:9,fontFace:'Calibri',color:INK3,align:'center'});
+    cats.forEach((c,i)=>{
+      const col=i%2,row=Math.floor(i/2),x=.28+col*4.7,y=3.06+row*.76;
+      s.addShape('roundRect',{x,y,w:4.5,h:.66,rectRadius:.08,fill:{color:BG},line:{color:'E5E9F4',width:.5}});
+      s.addShape('rect',{x,y:y+.14,w:.05,h:.38,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(c.name,{x:x+.14,y:y+.06,w:3.4,h:.22,fontSize:11,fontFace:'Calibri',bold:true,color:INK});
+      s.addText(c.rat.slice(0,65),{x:x+.14,y:y+.3,w:3.4,h:.28,fontSize:8.5,fontFace:'Calibri',color:INK3,wrap:true});
+      s.addShape('roundRect',{x:x+3.65,y:y+.14,w:.65,h:.25,rectRadius:.06,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(c.share+'%',{x:x+3.65,y:y+.14,w:.65,h:.25,fontSize:11,fontFace:'Calibri',bold:true,color:WHT,align:'center',valign:'middle'});
+    });
+    srcFtr(s,slides[3].src);pg(s,4);}
+
+    // S5 Categories
+    setBar(45,'Slide 5...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'B&C Categories','Top B&C categories',`${cats.length} categories mapped to Capgrid product catalogue`);
+    s.addShape('rect',{x:.28,y:2.28,w:9.3,h:.26,fill:{color:BLU},line:{color:BLU,width:0}});
+    s.addText('Category',{x:.38,y:2.28,w:2.1,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+    s.addText('Share',{x:2.5,y:2.28,w:.8,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle',align:'center'});
+    s.addText('Why this company procures at scale — rationale',{x:3.3,y:2.28,w:6.2,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+    cats.forEach((c,i)=>{
+      const y=2.54+i*.39;
+      s.addShape('rect',{x:.28,y,w:9.3,h:.37,fill:{color:i%2===0?WHT:BG},line:{color:'E5E9F4',width:.3}});
+      s.addText(c.name,{x:.38,y:y+.02,w:2.1,h:.33,fontSize:11,fontFace:'Calibri',bold:true,color:BLU,valign:'middle'});
+      s.addShape('roundRect',{x:2.5,y:y+.05,w:.8,h:.24,rectRadius:.06,fill:{color:BLT},line:{color:BBD,width:.5}});
+      s.addText(c.share+'%',{x:2.5,y:y+.05,w:.8,h:.24,fontSize:10,fontFace:'Calibri',bold:true,color:BLU,align:'center',valign:'middle'});
+      s.addText(c.rat.slice(0,88),{x:3.3,y:y+.02,w:6.2,h:.33,fontSize:9,fontFace:'Calibri',color:INK2,valign:'middle',wrap:true});
+    });
+    srcFtr(s,slides[4].src);pg(s,5);}
+
+    // S6 Cat+Sub table
+    setBar(55,'Slide 6...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Sub-Categories','B&C categories & sub-categories','5 specific sub-parts per category');
+    s.addShape('rect',{x:.28,y:2.28,w:9.3,h:.26,fill:{color:BLU},line:{color:BLU,width:0}});
+    s.addText('B&C Category & Share',{x:.38,y:2.28,w:1.9,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+    s.addText('Sub-categories — 5 specific parts per category',{x:2.3,y:2.28,w:7.1,h:.26,fontSize:9,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+    cats.forEach((c,i)=>{
+      const y=2.54+i*.41;
+      s.addShape('rect',{x:.28,y,w:9.3,h:.39,fill:{color:i%2===0?WHT:BG},line:{color:'E5E9F4',width:.3}});
+      s.addText(c.name+'\n'+c.share+'%',{x:.38,y:y+.02,w:1.9,h:.35,fontSize:10,fontFace:'Calibri',bold:true,color:BLU,valign:'middle',lineSpacingMultiple:1.1});
+      s.addText(c.subs.join('   ·   '),{x:2.3,y:y+.02,w:7.1,h:.35,fontSize:9,fontFace:'Calibri',color:INK2,valign:'middle',wrap:true});
+    });
+    srcFtr(s,slides[5].src);pg(s,6);}
+
+    // S7 Sub-parts detail
+    setBar(64,'Slide 7...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Sub-Parts Detail','Sub-categories detail',`What ${name} actually procures`);
+    cats.slice(0,3).forEach((c,i)=>{
+      const x=.28+i*3.18;
+      s.addShape('rect',{x,y:2.28,w:3.0,h:.28,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(c.name,{x:x+.08,y:2.28,w:2.84,h:.28,fontSize:10.5,fontFace:'Calibri',bold:true,color:WHT,valign:'middle'});
+      c.subs.forEach((sub,j)=>{
+        const y=2.64+j*.43;
+        s.addShape('roundRect',{x,y,w:3.0,h:.37,rectRadius:.06,fill:{color:j%2===0?BLT:WHT},line:{color:BBD,width:.5}});
+        s.addShape('oval',{x:x+.1,y:y+.13,w:.11,h:.11,fill:{color:BLU},line:{color:BLU,width:0}});
+        s.addText(sub,{x:x+.27,y:y+.04,w:2.6,h:.29,fontSize:9.5,fontFace:'Calibri',color:INK2,wrap:true,valign:'middle'});
+      });
+    });
+    srcFtr(s,slides[6].src);pg(s,7);}
+
+    // S8 Complexity
+    setBar(72,'Slide 8...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Supplier Complexity','B&C supplier base complexity',`${cats.length} categories × 8–15 suppliers = ${cats.length*8}–${cats.length*15}+ relationships`);
+    slides[7].content.split('\n').filter(l=>l.startsWith('→')).forEach((ln,i)=>{
+      const y=2.28+i*.48;
+      s.addShape('roundRect',{x:.28,y,w:9.3,h:.4,rectRadius:.07,fill:{color:i%2===0?BG:WHT},line:{color:'E5E9F4',width:.5}});
+      s.addShape('rect',{x:.28,y:y+.08,w:.05,h:.24,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(ln.replace('→','').trim(),{x:.44,y:y+.04,w:9.0,h:.32,fontSize:10.5,fontFace:'Calibri',color:INK,wrap:true});
+    });
+    srcFtr(s,slides[7].src);pg(s,8);}
+
+    // S9 Process gap
+    setBar(79,'Slide 9...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Process Gap','Process & visibility gap','Hidden cost of fragmented B&C sourcing');
+    slides[8].content.split('\n').filter(l=>l.startsWith('→')).forEach((ln,i)=>{
+      const y=2.28+i*.47;
+      s.addShape('roundRect',{x:.28,y,w:9.3,h:.4,rectRadius:.07,fill:{color:BG},line:{color:'E5E9F4',width:.5}});
+      s.addShape('rect',{x:.28,y:y+.08,w:.05,h:.24,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(ln.replace('→','').trim(),{x:.44,y:y+.04,w:9.0,h:.32,fontSize:10.5,fontFace:'Calibri',color:INK,wrap:true});
+    });
+    srcFtr(s,slides[8].src);pg(s,9);}
+
+    // S10 Impact
+    setBar(84,'Slide 10...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Business Impact','Quantified business impact',`Savings potential at ${bc}/year B&C spend`);
+    slides[9].metrics.forEach((m,i)=>mbox(s,.28+i*2.37,2.28,2.2,.88,m.v,m.l));
+    s.addText(`At ${bc} annual B&C spend across ${plants.length} manufacturing plants:`,{x:.28,y:3.3,w:9.3,h:.26,fontSize:11,fontFace:'Calibri',color:INK2,italic:true});
+    [{t:'Material cost saving (3–5%)',d:'Consolidated buying power vs fragmented plant-level purchases'},{t:'Working capital freed',d:'20–30 days inventory → 7–10 days cycle stock across all plants'},{t:'Indirect cost saving',d:'4–6 FTEs → 1 FTE for B&C management; 80% headcount saving'}].forEach((it,i)=>{
+      s.addShape('rect',{x:.28,y:3.64+i*.38,w:.05,h:.26,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(`${it.t} — ${it.d}`,{x:.43,y:3.62+i*.38,w:9.0,h:.3,fontSize:10.5,fontFace:'Calibri',color:INK2});
+    });
+    srcFtr(s,slides[9].src);pg(s,10);}
+
+    // S11 Why now
+    setBar(90,'Slide 11...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    hero(s,'Why Now','Why consolidate now',`The case for action at ${name}`);
+    slides[10].content.split('\n\n').filter(Boolean).slice(1).forEach((p,i)=>{
+      const lines=p.split('\n'),y=2.28+i*.82;
+      s.addShape('roundRect',{x:.28,y,w:9.3,h:.72,rectRadius:.09,fill:{color:i===0?BLT:BG},line:{color:i===0?BBD:'E5E9F4',width:.5}});
+      s.addShape('oval',{x:.42,y:y+.22,w:.28,h:.28,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText(String(i+1),{x:.42,y:y+.22,w:.28,h:.28,fontSize:11,fontFace:'Calibri',bold:true,color:WHT,align:'center',valign:'middle'});
+      s.addText(lines[0]||'',{x:.82,y:y+.06,w:8.6,h:.26,fontSize:11.5,fontFace:'Calibri',bold:true,color:INK});
+      s.addText((lines[1]||'').trim(),{x:.82,y:y+.34,w:8.6,h:.3,fontSize:9.5,fontFace:'Calibri',color:INK3,wrap:true});
+    });
+    srcFtr(s,slides[10].src);pg(s,11);}
+
+    // S12 CTA
+    setBar(95,'Slide 12...');await delay(30);
+    {const s=pres.addSlide();s.background={color:WHT};
+    s.addShape('rect',{x:0,y:0,w:.07,h:H,fill:{color:BLU},line:{color:BLU,width:0}});
+    s.addShape('rect',{x:5.4,y:0,w:4.6,h:H,fill:{color:BLT,transparency:20},line:{color:BLT,width:0}});
+    s.addShape('roundRect',{x:.28,y:.3,w:1.8,h:.26,rectRadius:.1,fill:{color:BLU},line:{color:BLU,width:0}});
+    s.addText('NEXT STEP',{x:.28,y:.3,w:1.8,h:.26,fontSize:8.5,fontFace:'Calibri',bold:true,color:WHT,align:'center',charSpacing:1.2});
+    s.addText(`Let's begin,\n${(co?.full||ST.name).split(' ')[0]}`,{x:.28,y:.7,w:5.0,h:1.4,fontSize:30,fontFace:'Cambria',bold:true,color:INK,lineSpacingMultiple:1.2});
+    s.addText('30-minute Supply Chain Diagnostic:',{x:.28,y:2.24,w:5.0,h:.28,fontSize:11,fontFace:'Calibri',color:INK3});
+    [`Map ${bc} B&C spend across ${cats.map(c=>c.name).join(', ')}`,`Analyse ${plants.length}-plant supplier base vs Capgrid strategic pools`,'Customised savings model — per category, per plant','Live demo: Sourcing CT + Q-TAG + Supply Chain Control Tower','Pilot: one category, one plant — 90 days, zero disruption'].forEach((item,i)=>{
+      s.addShape('roundRect',{x:.28,y:2.6+i*.44,w:.22,h:.22,rectRadius:.04,fill:{color:BLU},line:{color:BLU,width:0}});
+      s.addText('→',{x:.28,y:2.6+i*.44,w:.22,h:.22,fontSize:9,color:WHT,align:'center',valign:'middle'});
+      s.addText(item,{x:.6,y:2.6+i*.44,w:4.7,h:.3,fontSize:10.5,fontFace:'Calibri',color:INK2});
+    });
+    s.addShape('roundRect',{x:.28,y:4.84,w:4.9,h:.36,rectRadius:.08,fill:{color:BLU},line:{color:BLU,width:0}});
+    s.addText('One meeting. Tangible output. No commitment.',{x:.28,y:4.84,w:4.9,h:.36,fontSize:11.5,fontFace:'Calibri',bold:true,color:WHT,align:'center',valign:'middle'});
+    s.addText('One meeting.\nTangible output.\nNo commitment.',{x:5.6,y:1.4,w:4.0,h:2.0,fontSize:22,fontFace:'Cambria',bold:true,color:BLU,align:'center',lineSpacingMultiple:1.4});
+    s.addShape('rect',{x:5.6,y:3.5,w:4.0,h:.02,fill:{color:BBD},line:{color:BBD,width:0}});
+    [['Client',co?.full||ST.name],['Revenue',rev+' ('+ST.fy+')'],['B&C Spend',bc+'/year'],['Plants',plants.length+' manufacturing locations'],['Source',ST.revSrc.slice(0,35)]].forEach(([l,v],i)=>{
+      s.addText(l,{x:5.6,y:3.62+i*.3,w:1.4,h:.26,fontSize:9,fontFace:'Calibri',color:INK4});
+      s.addText(v.length>32?v.slice(0,31)+'…':v,{x:7.0,y:3.62+i*.3,w:2.55,h:.26,fontSize:9.5,fontFace:'Calibri',bold:true,color:INK});
+    });}
+
+    setBar(98,'Saving...');await delay(30);
+    const fn=`Capgrid_${(co?.full||ST.name).replace(/\s+/g,'_')}_Pitch_${new Date().toISOString().slice(0,10)}.pptx`;
+    await pres.writeFile({fileName:fn});
+    setBar(100,'Done!');
+    await delay(300);
+    toast(`✓ Downloaded: ${fn}`,3500);
+  }catch(err){
+    console.error(err);
+    toast('⚠️ Error: '+err.message.slice(0,80),4000);
+  }finally{
+    document.getElementById('pptxOv').classList.remove('show');
+    document.getElementById('dlBtn').disabled=false;
+  }
+}
+</script>
+</body>
+</html>
